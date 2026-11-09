@@ -10,20 +10,28 @@
 // "https://fredy-bills-bakery.onrender.com"
 const PRODUCTION_BACKEND_URL = "https://fredy-bills-bakery.onrender.com";
 
-// Check if running in local development environment
+// Check environment
 const isLocal = 
   window.location.origin.includes("localhost") || 
   window.location.origin.includes("127.0.0.1") ||
   window.location.protocol === "file:";
 
+// If running directly on the backend (e.g. Render), use same-origin /api
+const isBackendHost = 
+  window.location.origin.includes("onrender.com") ||
+  window.location.origin.includes("render");
+
 // Active API Base URL:
 // 1. Checks localStorage override (useful for testing or switching environments)
 // 2. Uses http://127.0.0.1:8000/api if running locally
-// 3. Uses PRODUCTION_BACKEND_URL/api in production on Vercel
+// 3. Uses same-origin /api if accessed directly on Render
+// 4. Uses PRODUCTION_BACKEND_URL/api if hosted on Vercel
 const API_BASE_URL = localStorage.getItem("fb_api_url") || (
   isLocal 
     ? "http://127.0.0.1:8000/api" 
-    : (PRODUCTION_BACKEND_URL.replace(/\/+$/, "") + "/api")
+    : isBackendHost 
+      ? `${window.location.origin}/api` 
+      : `${PRODUCTION_BACKEND_URL.replace(/\/+$/, "")}/api`
 );
 
 const API = {
