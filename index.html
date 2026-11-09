@@ -2,6 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <script>
+    // Immediate redirect if not logged in
+    (function() {
+      try {
+        var user = localStorage.getItem('fb_user');
+        if (!user) {
+          window.location.replace('login.html');
+        }
+      } catch (e) {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fredy Bills — Artisan Bakery</title>
   <meta name="description" content="Freshly baked artisan cakes, sourdough breads, croissants, and Filipino confections. Order online for delivery or pickup from Fredy Bills Bakery, Cebu City.">

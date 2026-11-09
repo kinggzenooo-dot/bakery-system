@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "rewrites": [
+  "cleanUrls": true,
+  "redirects": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.py"
+      "source": "/",
+      "destination": "/login.html",
+      "permanent": false
     }
   ]
 }
