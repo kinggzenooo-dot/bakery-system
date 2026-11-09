@@ -4,403 +4,667 @@ from sqlalchemy.orm import Session
 from app import models
 from app.auth import get_password_hash
 
-def seed_database(db: Session):
-    # Check if database is already seeded
-    if db.query(models.Category).first():
-        return
-
-    print("[SEED] Seeding Fredy Bills Enterprise Bakery database...")
-
-    # 1. Categories
-    categories_data = [
-      {
+CATEGORIES_DATA = [
+    {
         "id": "cakes",
         "name": "Artisanal Cakes",
         "description": "Celebration, layered, and chiffon cakes hand-crafted with European butter.",
         "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80"
-      },
-      {
+    },
+    {
         "id": "breads",
         "name": "Artisan Breads",
         "description": "Naturally fermented sourdoughs and rustic crusty hearth loaves.",
         "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80"
-      },
-      {
+    },
+    {
         "id": "pastries",
         "name": "Viennoiserie & Pastries",
         "description": "Flaky Normandy butter croissants, danishes, and savoury turnovers.",
         "image": "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80"
-      },
-      {
+    },
+    {
         "id": "cookies",
         "name": "Cookies & Confections",
         "description": "Gooey chocolate chunk cookies, financiers, and French macarons.",
         "image": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=800&q=80"
-      },
-      {
+    },
+    {
         "id": "specialty",
         "name": "Specialty & Filipino",
         "description": "Classic Filipino bakery staples elevated with premium local ingredients.",
         "image": "https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80"
-      }
-    ]
+    }
+]
 
-    for cat in categories_data:
-        db_cat = models.Category(
-            id=cat["id"],
-            name=cat["name"],
-            description=cat["description"],
-            image=cat["image"],
-            is_active=True
-        )
-        db.add(db_cat)
-
-    # 2. Products (16 items)
-    products_data = [
-      {
-        "id": "p101",
-        "name": "Ube Halaya Layer Cake",
+PRODUCTS_30 = [
+    # 1. Artisanal Cakes (6 items)
+    {
+        "id": "cake-01",
+        "name": "Classic Belgian Dark Chocolate Cake",
         "category_id": "cakes",
         "price": 1250.0,
-        "cost_price": 520.0,
-        "image": "https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=700&q=80",
-        "description": "Four decadent tiers of sponge cake folded with real Bohol purple yam, layered with silky ube mousse and whipped macapuno cream.",
-        "short_description": "Four decadent tiers folded with real Bohol purple yam & macapuno cream.",
-        "allergens_json": json.dumps(["Dairy", "Eggs", "Gluten"]),
-        "badge": "Signature",
-        "is_featured": True,
-        "rating": 4.95,
-        "sizes_json": json.dumps([
-          {"name": "6-inch (6-8 pax)", "priceDelta": 0},
-          {"name": "8-inch (10-14 pax)", "priceDelta": 450},
-          {"name": "10-inch (16-20 pax)", "priceDelta": 900}
-        ]),
-        "in_stock": True,
-        "stock_quantity": 25
-      },
-      {
-        "id": "p102",
-        "name": "Belgian Dark Chocolate Truffle Cake",
-        "category_id": "cakes",
-        "price": 1450.0,
-        "cost_price": 600.0,
-        "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=700&q=80",
-        "description": "70% single-origin Callebaut dark chocolate ganache enrobing moist flourless sponge, finished with cocoa nibs and gold dust.",
-        "short_description": "70% single-origin dark chocolate ganache over moist sponge.",
-        "allergens_json": json.dumps(["Dairy", "Eggs", "Soy"]),
+        "cost_price": 550.0,
+        "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80",
+        "description": "Three dense layers of moist dark cocoa sponge layered with 70% Belgian chocolate ganache.",
+        "short_description": "Rich 70% dark chocolate multi-layer cake",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
         "badge": "Bestseller",
         "is_featured": True,
         "rating": 4.9,
-        "sizes_json": json.dumps([
-          {"name": "6-inch", "priceDelta": 0},
-          {"name": "8-inch", "priceDelta": 500}
-        ]),
+        "stock_quantity": 40,
         "in_stock": True,
-        "stock_quantity": 18
-      },
-      {
-        "id": "p103",
-        "name": "Mango Cloud Chiffon",
+        "sizes_json": '[{"name": "6-inch (Feeds 6-8)", "priceDelta": 0}, {"name": "8-inch (Feeds 12-16)", "priceDelta": 450}]'
+    },
+    {
+        "id": "cake-02",
+        "name": "Bohol Ube Halaya Velvet Cake",
         "category_id": "cakes",
         "price": 1150.0,
         "cost_price": 480.0,
-        "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=700&q=80",
-        "description": "Featherlight vanilla chiffon crowned with fresh Guimaras mango florets and light Madagascar vanilla diplomat cream.",
-        "short_description": "Featherlight vanilla chiffon crowned with sweet Guimaras mangoes.",
-        "allergens_json": json.dumps(["Dairy", "Eggs", "Gluten"]),
-        "badge": "Fresh",
-        "is_featured": False,
-        "rating": 4.85,
-        "sizes_json": json.dumps([
-          {"name": "7-inch", "priceDelta": 0},
-          {"name": "9-inch", "priceDelta": 400}
-        ]),
-        "in_stock": True,
-        "stock_quantity": 15
-      },
-      {
-        "id": "p104",
-        "name": "Burnt Basque Cheesecake",
-        "category_id": "cakes",
-        "price": 980.0,
-        "cost_price": 410.0,
-        "image": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=700&q=80",
-        "description": "Caramelized deeply on top with a silky molten cream cheese custard center and a hint of organic lemon zest.",
-        "short_description": "Caramelized deeply on top with a silky molten cream cheese center.",
-        "allergens_json": json.dumps(["Dairy", "Eggs"]),
-        "badge": "Chef Choice",
-        "is_featured": True,
-        "rating": 4.9,
-        "sizes_json": json.dumps([
-          {"name": "6-inch Whole", "priceDelta": 0},
-          {"name": "8-inch Whole", "priceDelta": 450}
-        ]),
-        "in_stock": True,
-        "stock_quantity": 30
-      },
-      {
-        "id": "p201",
-        "name": "36-Hour Country Sourdough Batard",
-        "category_id": "breads",
-        "price": 280.0,
-        "cost_price": 95.0,
-        "image": "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=700&q=80",
-        "description": "Slow cold-fermented for 36 hours using our 6-year-old wild starter, dark blistered crust, and open airy crumb.",
-        "short_description": "Slow fermented with our 6-year wild starter, dark blistered crust.",
-        "allergens_json": json.dumps(["Gluten"]),
-        "badge": "Artisan",
-        "is_featured": True,
-        "rating": 4.95,
-        "sizes_json": json.dumps([
-          {"name": "Whole Loaf (750g)", "priceDelta": 0},
-          {"name": "Sliced (750g)", "priceDelta": 10}
-        ]),
-        "in_stock": True,
-        "stock_quantity": 40
-      },
-      {
-        "id": "p202",
-        "name": "Rosemary & Olive Oil Focaccia",
-        "category_id": "breads",
-        "price": 320.0,
-        "cost_price": 110.0,
-        "image": "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?auto=format&fit=crop&w=700&q=80",
-        "description": "Pillowy Italian focaccia steeped in cold-pressed extra virgin olive oil, fresh rosemary sprigs, and Maldon sea salt flakes.",
-        "short_description": "Pillowy focaccia with EVOO, fresh garden rosemary & Maldon sea salt.",
-        "allergens_json": json.dumps(["Gluten"]),
-        "badge": "Fresh Baked",
-        "is_featured": False,
-        "rating": 4.8,
-        "sizes_json": json.dumps([
-          {"name": "Half Slab", "priceDelta": 0},
-          {"name": "Full Slab", "priceDelta": 260}
-        ]),
-        "in_stock": True,
-        "stock_quantity": 20
-      },
-      {
-        "id": "p301",
-        "name": "Traditional French Croissant",
-        "category_id": "pastries",
-        "price": 140.0,
-        "cost_price": 45.0,
-        "image": "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=700&q=80",
-        "description": "32 delicate laminated layers of French Beurre d'Isigny AOC butter, crisp honeycomb interior, golden baked.",
-        "short_description": "32 laminated layers with French Beurre d'Isigny AOC butter.",
-        "allergens_json": json.dumps(["Dairy", "Gluten"]),
-        "badge": "Bestseller",
-        "is_featured": True,
-        "rating": 4.9,
-        "sizes_json": json.dumps([
-          {"name": "Single Piece", "priceDelta": 0},
-          {"name": "Box of 4 (-10%)", "priceDelta": 380}
-        ]),
-        "in_stock": True,
-        "stock_quantity": 60
-      },
-      {
-        "id": "p302",
-        "name": "Pain au Chocolat",
-        "category_id": "pastries",
-        "price": 165.0,
-        "cost_price": 55.0,
-        "image": "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=700&q=80",
-        "description": "Buttery laminated dough wrapped around two batons of Valrhona 55% semi-sweet dark chocolate.",
-        "short_description": "Buttery croissant pastry with two bars of Valrhona 55% dark chocolate.",
-        "allergens_json": json.dumps(["Dairy", "Gluten", "Soy"]),
-        "badge": "Popular",
-        "is_featured": True,
-        "rating": 4.88,
-        "sizes_json": json.dumps([
-          {"name": "Single Piece", "priceDelta": 0},
-          {"name": "Box of 4", "priceDelta": 460}
-        ]),
-        "in_stock": True,
-        "stock_quantity": 45
-      },
-      {
-        "id": "p401",
-        "name": "Salted Dark Chocolate Chunk Cookie",
-        "category_id": "cookies",
-        "price": 110.0,
-        "cost_price": 38.0,
-        "image": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=700&q=80",
-        "description": "Crisp browned-butter edges, gooey center with Callebaut chocolate chunks and coarse French fleur de sel.",
-        "short_description": "Browned-butter cookie with puddle chocolate & French fleur de sel.",
-        "allergens_json": json.dumps(["Dairy", "Eggs", "Gluten"]),
+        "image": "https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?auto=format&fit=crop&w=800&q=80",
+        "description": "Authentic purple yam chiffon filled with slow-cooked Bohol ube halaya and fresh whipped cream.",
+        "short_description": "Pure Bohol ube chiffon with halaya cream",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
         "badge": "Signature",
         "is_featured": True,
-        "rating": 4.94,
-        "sizes_json": json.dumps([
-          {"name": "Single Cookie (120g)", "priceDelta": 0},
-          {"name": "Box of 6", "priceDelta": 520}
-        ]),
+        "rating": 5.0,
+        "stock_quantity": 35,
         "in_stock": True,
-        "stock_quantity": 50
-      },
-      {
-        "id": "p501",
-        "name": "Artisanal Cheese Ensaymada",
-        "category_id": "specialty",
-        "price": 185.0,
-        "cost_price": 65.0,
-        "image": "https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=700&q=80",
-        "description": "Brioche dough coiled with whipped butter, blanketed with generous aged Queso de Bola shavings and pure butter glaze.",
-        "short_description": "Ultra soft brioche crowned with generous aged Queso de Bola shavings.",
-        "allergens_json": json.dumps(["Dairy", "Eggs", "Gluten"]),
-        "badge": "Classic Fav",
+        "sizes_json": '[{"name": "6-inch", "priceDelta": 0}, {"name": "8-inch", "priceDelta": 400}]'
+    },
+    {
+        "id": "cake-03",
+        "name": "Red Velvet Swirl Cheesecake",
+        "category_id": "cakes",
+        "price": 1350.0,
+        "cost_price": 600.0,
+        "image": "https://images.unsplash.com/photo-1616541823729-00fe0aacd32c?auto=format&fit=crop&w=800&q=80",
+        "description": "Velvety crimson cocoa cake swirled with baked New York cream cheese and mascarpone frosting.",
+        "short_description": "Red velvet sponge with baked NY cheesecake layer",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Popular",
         "is_featured": True,
-        "rating": 4.96,
-        "sizes_json": json.dumps([
-          {"name": "Single Jumbo (150g)", "priceDelta": 0},
-          {"name": "Box of 6 (-15%)", "priceDelta": 820}
-        ]),
+        "rating": 4.8,
+        "stock_quantity": 30,
         "in_stock": True,
-        "stock_quantity": 35
-      }
+        "sizes_json": '[{"name": "6-inch", "priceDelta": 0}, {"name": "8-inch", "priceDelta": 500}]'
+    },
+    {
+        "id": "cake-04",
+        "name": "Guimaras Mango Tres Leches Cake",
+        "category_id": "cakes",
+        "price": 1050.0,
+        "cost_price": 450.0,
+        "image": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=800&q=80",
+        "description": "Light sponge cake steeped in evaporated milk, condensed milk, and heavy cream, topped with sweet Guimaras mango roses.",
+        "short_description": "Triple-milk soaked sponge with fresh mangoes",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Seasonal",
+        "is_featured": False,
+        "rating": 4.9,
+        "stock_quantity": 25,
+        "in_stock": True,
+        "sizes_json": '[{"name": "8x8 Square", "priceDelta": 0}]'
+    },
+    {
+        "id": "cake-05",
+        "name": "San Sebastian Burnt Basque Cheesecake",
+        "category_id": "cakes",
+        "price": 1200.0,
+        "cost_price": 520.0,
+        "image": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80",
+        "description": "Rustic caramelized crust with a custardy, oozing molten center made from premium French cream cheese.",
+        "short_description": "Caramelized crust with gooey molten center",
+        "allergens_json": '["Dairy", "Eggs"]',
+        "badge": "Chef Choice",
+        "is_featured": True,
+        "rating": 5.0,
+        "stock_quantity": 20,
+        "in_stock": True,
+        "sizes_json": '[{"name": "7-inch", "priceDelta": 0}]'
+    },
+    {
+        "id": "cake-06",
+        "name": "Spiced Carrot Walnut Cream Cake",
+        "category_id": "cakes",
+        "price": 980.0,
+        "cost_price": 390.0,
+        "image": "https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=800&q=80",
+        "description": "Shredded organic carrots with cinnamon, nutmeg, toasted walnuts, and tangy whipped cream cheese.",
+        "short_description": "Hearty spiced carrot cake with toasted walnuts",
+        "allergens_json": '["Dairy", "Gluten", "Eggs", "Nuts"]',
+        "badge": "",
+        "is_featured": False,
+        "rating": 4.7,
+        "stock_quantity": 25,
+        "in_stock": True,
+        "sizes_json": '[{"name": "6-inch", "priceDelta": 0}]'
+    },
+
+    # 2. Artisan Breads (6 items)
+    {
+        "id": "bread-01",
+        "name": "Rustic San Francisco Country Sourdough",
+        "category_id": "breads",
+        "price": 220.0,
+        "cost_price": 75.0,
+        "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+        "description": "Naturally leavened with wild yeast, cold fermented for 36 hours for maximum flavor and open aerated crumb.",
+        "short_description": "Wild fermented 36-hr artisanal hearth loaf",
+        "allergens_json": '["Gluten"]',
+        "badge": "Organic",
+        "is_featured": True,
+        "rating": 4.9,
+        "stock_quantity": 50,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Whole Loaf (850g)", "priceDelta": 0}, {"name": "Sliced", "priceDelta": 0}]'
+    },
+    {
+        "id": "bread-02",
+        "name": "Crispy French Traditional Baguette",
+        "category_id": "breads",
+        "price": 120.0,
+        "cost_price": 38.0,
+        "image": "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=800&q=80",
+        "description": "Classic long French loaf baked in stone hearth ovens for a shatteringly crisp crust and chewy honeycomb interior.",
+        "short_description": "Authentic stone-baked French baguette",
+        "allergens_json": '["Gluten"]',
+        "badge": "Daily Baked",
+        "is_featured": False,
+        "rating": 4.8,
+        "stock_quantity": 60,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Standard (300g)", "priceDelta": 0}]'
+    },
+    {
+        "id": "bread-03",
+        "name": "Japanese Hokkaido Shokupan Milk Bread",
+        "category_id": "breads",
+        "price": 180.0,
+        "cost_price": 60.0,
+        "image": "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=800&q=80",
+        "description": "Feather-light, cloud-soft loaf crafted using the Japanese Yudane scald method with fresh whole milk.",
+        "short_description": "Ultra-soft, sweet Japanese milk loaf",
+        "allergens_json": '["Dairy", "Gluten"]',
+        "badge": "Must Try",
+        "is_featured": True,
+        "rating": 5.0,
+        "stock_quantity": 45,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Thick Sliced", "priceDelta": 0}, {"name": "Uncut Loaf", "priceDelta": 0}]'
+    },
+    {
+        "id": "bread-04",
+        "name": "Rosemary & Sea Salt Olive Oil Focaccia",
+        "category_id": "breads",
+        "price": 190.0,
+        "cost_price": 65.0,
+        "image": "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?auto=format&fit=crop&w=800&q=80",
+        "description": "Deeply dimpled Ligurian style focaccia soaked in Spanish extra virgin olive oil, fresh rosemary sprigs, and Maldon sea salt.",
+        "short_description": "Olive oil focaccia with fresh rosemary",
+        "allergens_json": '["Gluten"]',
+        "badge": "",
+        "is_featured": False,
+        "rating": 4.7,
+        "stock_quantity": 30,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Slab (400g)", "priceDelta": 0}]'
+    },
+    {
+        "id": "bread-05",
+        "name": "Rustic Seeded Whole Wheat Multi-Grain",
+        "category_id": "breads",
+        "price": 240.0,
+        "cost_price": 85.0,
+        "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+        "description": "100% stoneground whole wheat enriched with toasted pumpkin seeds, sunflower seeds, golden flax, and oats.",
+        "short_description": "100% whole grain loaf with toasted seeds",
+        "allergens_json": '["Gluten", "Seeds"]',
+        "badge": "Healthy",
+        "is_featured": False,
+        "rating": 4.8,
+        "stock_quantity": 35,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Whole (750g)", "priceDelta": 0}]'
+    },
+    {
+        "id": "bread-06",
+        "name": "French Normandy Brioche Nanterre",
+        "category_id": "breads",
+        "price": 210.0,
+        "cost_price": 80.0,
+        "image": "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=800&q=80",
+        "description": "Buttery, golden braided brioche enriched with free-range eggs and 82% Normandy European churned butter.",
+        "short_description": "Golden butter brioche loaf",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "",
+        "is_featured": False,
+        "rating": 4.9,
+        "stock_quantity": 40,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Standard (450g)", "priceDelta": 0}]'
+    },
+
+    # 3. Viennoiserie & Pastries (6 items)
+    {
+        "id": "pastry-01",
+        "name": "Pure Butter Normandy Croissant",
+        "category_id": "pastries",
+        "price": 95.0,
+        "cost_price": 32.0,
+        "image": "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80",
+        "description": "27 laminated layers of golden butter pastry, baked fresh for maximum crunch and airy honeycomb interior.",
+        "short_description": "Hand-laminated 27-layer butter croissant",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Bestseller",
+        "is_featured": True,
+        "rating": 5.0,
+        "stock_quantity": 80,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Piece", "priceDelta": 0}]'
+    },
+    {
+        "id": "pastry-02",
+        "name": "Pain au Chocolat (Chocolate Croissant)",
+        "category_id": "pastries",
+        "price": 115.0,
+        "cost_price": 42.0,
+        "image": "https://images.unsplash.com/photo-1530610476181-d83430b64dcd?auto=format&fit=crop&w=800&q=80",
+        "description": "Crisp buttery layers wrapping two dark Valrhona 55% chocolate batons that melt gently on the tongue.",
+        "short_description": "Flaky pastry wrapped around twin chocolate batons",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Favorite",
+        "is_featured": True,
+        "rating": 4.9,
+        "stock_quantity": 70,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Piece", "priceDelta": 0}]'
+    },
+    {
+        "id": "pastry-03",
+        "name": "Twice-Baked Almond Frangipane Croissant",
+        "category_id": "pastries",
+        "price": 145.0,
+        "cost_price": 55.0,
+        "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+        "description": "Dipped in vanilla syrup, stuffed with luscious almond cream, rebaked, and showered with toasted flaked almonds.",
+        "short_description": "Filled with almond frangipane and flaked almonds",
+        "allergens_json": '["Dairy", "Gluten", "Eggs", "Nuts"]',
+        "badge": "Decadent",
+        "is_featured": False,
+        "rating": 4.9,
+        "stock_quantity": 50,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Piece", "priceDelta": 0}]'
+    },
+    {
+        "id": "pastry-04",
+        "name": "Portuguese Pastel de Nata (Custard Tart)",
+        "category_id": "pastries",
+        "price": 85.0,
+        "cost_price": 28.0,
+        "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+        "description": "Spiral laminated pastry cup with caramelized egg yolk custard and a dusting of Sri Lankan cinnamon.",
+        "short_description": "Crispy caramelized egg custard tart",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "",
+        "is_featured": False,
+        "rating": 4.8,
+        "stock_quantity": 60,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Piece", "priceDelta": 0}]'
+    },
+    {
+        "id": "pastry-05",
+        "name": "Wild Berry Vanilla Cream Danish",
+        "category_id": "pastries",
+        "price": 125.0,
+        "cost_price": 45.0,
+        "image": "https://images.unsplash.com/photo-1509365465985-25d11c17e812?auto=format&fit=crop&w=800&q=80",
+        "description": "Square Danish pastry filled with Madagascar vanilla bean creme patissiere, raspberries, and wild blueberries.",
+        "short_description": "Flaky Danish topped with berries and pastry cream",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "",
+        "is_featured": False,
+        "rating": 4.7,
+        "stock_quantity": 40,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Piece", "priceDelta": 0}]'
+    },
+    {
+        "id": "pastry-06",
+        "name": "Caramelized Kouign-Amann Breton Pastry",
+        "category_id": "pastries",
+        "price": 130.0,
+        "cost_price": 48.0,
+        "image": "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80",
+        "description": "Traditional Breton butter cake made with salted butter dough, baked slow until the sugar crystallizes into amber crust.",
+        "short_description": "Caramelized Breton salted butter pastry",
+        "allergens_json": '["Dairy", "Gluten"]',
+        "badge": "Artisan",
+        "is_featured": False,
+        "rating": 4.9,
+        "stock_quantity": 35,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Piece", "priceDelta": 0}]'
+    },
+
+    # 4. Cookies & Confections (6 items)
+    {
+        "id": "cookie-01",
+        "name": "NYC Chunky Semi-Sweet Chocolate Chip Cookie",
+        "category_id": "cookies",
+        "price": 90.0,
+        "cost_price": 30.0,
+        "image": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=800&q=80",
+        "description": "Substantial 140g bakery cookie with a crisp golden exterior and a gooey center loaded with Belgian chocolate chunks.",
+        "short_description": "Giant 140g bakery-style gooey chocolate cookie",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Bestseller",
+        "is_featured": True,
+        "rating": 5.0,
+        "stock_quantity": 90,
+        "in_stock": True,
+        "sizes_json": '[{"name": "140g Single", "priceDelta": 0}]'
+    },
+    {
+        "id": "cookie-02",
+        "name": "Molten Fudge Brownie Cookie",
+        "category_id": "cookies",
+        "price": 95.0,
+        "cost_price": 34.0,
+        "image": "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=800&q=80",
+        "description": "Deep dark chocolate dough with the chew of a brownie and shiny crinkled top, packed with dark chocolate chips.",
+        "short_description": "Fudgy brownie chew in a rich cookie",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Rich",
+        "is_featured": False,
+        "rating": 4.8,
+        "stock_quantity": 75,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Single", "priceDelta": 0}]'
+    },
+    {
+        "id": "cookie-03",
+        "name": "Kyoto Uji Matcha White Chocolate Cookie",
+        "category_id": "cookies",
+        "price": 105.0,
+        "cost_price": 40.0,
+        "image": "https://images.unsplash.com/photo-1548365328-8c6db3220e4c?auto=format&fit=crop&w=800&q=80",
+        "description": "First-harvest Japanese matcha green tea dough balanced with sweet Swiss white chocolate chunks.",
+        "short_description": "First-harvest matcha with Swiss white chocolate",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Premium",
+        "is_featured": False,
+        "rating": 4.9,
+        "stock_quantity": 60,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Single", "priceDelta": 0}]'
+    },
+    {
+        "id": "cookie-04",
+        "name": "Stuffed Red Velvet Cream Cheese Cookie",
+        "category_id": "cookies",
+        "price": 110.0,
+        "cost_price": 42.0,
+        "image": "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80",
+        "description": "Bright red velvet dough filled with a thick disk of sweetened vanilla cream cheese that oozes when warmed.",
+        "short_description": "Red velvet cookie stuffed with cream cheese",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Popular",
+        "is_featured": True,
+        "rating": 4.9,
+        "stock_quantity": 65,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Single", "priceDelta": 0}]'
+    },
+    {
+        "id": "cookie-05",
+        "name": "Parisian Almond Macarons (Box of 6)",
+        "category_id": "cookies",
+        "price": 380.0,
+        "cost_price": 140.0,
+        "image": "https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=800&q=80",
+        "description": "Six delicate French almond meringue shells filled with chocolate ganache, pistachio cream, salted caramel, and raspberry puree.",
+        "short_description": "Assorted box of 6 handcrafted French macarons",
+        "allergens_json": '["Dairy", "Eggs", "Nuts"]',
+        "badge": "Gift Box",
+        "is_featured": True,
+        "rating": 5.0,
+        "stock_quantity": 30,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Box of 6", "priceDelta": 0}]'
+    },
+    {
+        "id": "cookie-06",
+        "name": "Brown Butter Pecan Toffee Cookie",
+        "category_id": "cookies",
+        "price": 100.0,
+        "cost_price": 38.0,
+        "image": "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=800&q=80",
+        "description": "Nutty browned European butter dough folded with roasted Georgia pecans and crunchy English toffee bits.",
+        "short_description": "Brown butter cookie with roasted pecans & toffee",
+        "allergens_json": '["Dairy", "Gluten", "Eggs", "Nuts"]',
+        "badge": "",
+        "is_featured": False,
+        "rating": 4.8,
+        "stock_quantity": 55,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Single", "priceDelta": 0}]'
+    },
+
+    # 5. Specialty & Filipino Favorites (6 items)
+    {
+        "id": "spec-01",
+        "name": "Bohol Ube Cheese Pandesal (Pack of 6)",
+        "category_id": "specialty",
+        "price": 180.0,
+        "cost_price": 65.0,
+        "image": "https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80",
+        "description": "Soft purple yam rolls rolled in fine breadcrumbs, stuffed with slow-cooked ube halaya and savory quick-melt cheese.",
+        "short_description": "Soft purple yam rolls with cheese & ube halaya",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Bestseller",
+        "is_featured": True,
+        "rating": 5.0,
+        "stock_quantity": 80,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Pack of 6", "priceDelta": 0}]'
+    },
+    {
+        "id": "spec-02",
+        "name": "Quezo de Bola Ensaymada Especial",
+        "category_id": "specialty",
+        "price": 95.0,
+        "cost_price": 35.0,
+        "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+        "description": "Brioche spiral brushed generously with churned butter, sprinkled with sugar, and heaped with aged Queso de Bola shavings.",
+        "short_description": "Buttery brioche swirl with aged Queso de Bola",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Signature",
+        "is_featured": True,
+        "rating": 4.9,
+        "stock_quantity": 70,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Single", "priceDelta": 0}]'
+    },
+    {
+        "id": "spec-03",
+        "name": "Artisanal Toasted Sesame Binankal (Pack of 8)",
+        "category_id": "specialty",
+        "price": 85.0,
+        "cost_price": 28.0,
+        "image": "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=800&q=80",
+        "description": "Traditional Visayan dense fried bread coated completely in fragrant toasted sesame seeds, crisp outside and sweet inside.",
+        "short_description": "Traditional Visayan sesame fried dough balls",
+        "allergens_json": '["Gluten", "Eggs", "Sesame"]',
+        "badge": "Heritage",
+        "is_featured": False,
+        "rating": 4.8,
+        "stock_quantity": 90,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Pack of 8", "priceDelta": 0}]'
+    },
+    {
+        "id": "spec-04",
+        "name": "Caramelized Butter Spanish Bread (Pack of 4)",
+        "category_id": "specialty",
+        "price": 120.0,
+        "cost_price": 40.0,
+        "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+        "description": "Rolled soft yeast bread filled with warm butter, muscovado brown sugar, and toasted breadcrumbs.",
+        "short_description": "Soft rolled bread with sweet buttery filling",
+        "allergens_json": '["Dairy", "Gluten"]',
+        "badge": "Favorite",
+        "is_featured": False,
+        "rating": 4.9,
+        "stock_quantity": 75,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Pack of 4", "priceDelta": 0}]'
+    },
+    {
+        "id": "spec-05",
+        "name": "Traditional Filipino Egg Custard Pie (Whole 9-inch)",
+        "category_id": "specialty",
+        "price": 450.0,
+        "cost_price": 180.0,
+        "image": "https://images.unsplash.com/photo-1519869325930-281384150729?auto=format&fit=crop&w=800&q=80",
+        "description": "Classic egg pie with a dark caramelized toasted top, smooth golden custard center, and flaky buttery crust.",
+        "short_description": "9-inch whole golden custard pie with toasted top",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "Celebration",
+        "is_featured": True,
+        "rating": 5.0,
+        "stock_quantity": 25,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Whole 9-inch", "priceDelta": 0}]'
+    },
+    {
+        "id": "spec-06",
+        "name": "Manila Dulce de Leche Pianono Roll",
+        "category_id": "specialty",
+        "price": 160.0,
+        "cost_price": 55.0,
+        "image": "https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?auto=format&fit=crop&w=800&q=80",
+        "description": "Delicate vanilla chiffon cake rolled tightly with sweetened butter and creamy caramelized dulce de leche.",
+        "short_description": "Soft chiffon jelly roll with dulce de leche",
+        "allergens_json": '["Dairy", "Gluten", "Eggs"]',
+        "badge": "",
+        "is_featured": False,
+        "rating": 4.7,
+        "stock_quantity": 40,
+        "in_stock": True,
+        "sizes_json": '[{"name": "Whole Roll", "priceDelta": 0}]'
+    }
+]
+
+def seed_database(db: Session, force: bool = False):
+    print("[SEED] Synchronizing Fredy Bills Bakery Enterprise Database...")
+
+    # 1. Categories
+    for cat in CATEGORIES_DATA:
+        existing_cat = db.query(models.Category).filter(models.Category.id == cat["id"]).first()
+        if not existing_cat:
+            db_cat = models.Category(
+                id=cat["id"],
+                name=cat["name"],
+                description=cat["description"],
+                image=cat["image"],
+                is_active=True
+            )
+            db.add(db_cat)
+    db.commit()
+
+    # 2. Products - Replace old menu with exactly 30 premium products
+    current_count = db.query(models.Product).count()
+    if force or current_count != 30:
+        print(f"[SEED] Refreshing products table (found {current_count}, updating to 30 new products)...")
+        # Remove old products that are not in the new set
+        new_ids = {p["id"] for p in PRODUCTS_30}
+        old_products = db.query(models.Product).filter(~models.Product.id.in_(new_ids)).all()
+        for old_p in old_products:
+            # Unlink any foreign key references before deleting
+            db.query(models.ProductionTask).filter(models.ProductionTask.product_id == old_p.id).update({"product_id": "cake-01"})
+            db.query(models.OrderItem).filter(models.OrderItem.product_id == old_p.id).update({"product_id": "cake-01"})
+            db.delete(old_p)
+        db.commit()
+
+        for p_data in PRODUCTS_30:
+            existing = db.query(models.Product).filter(models.Product.id == p_data["id"]).first()
+            if existing:
+                for k, v in p_data.items():
+                    setattr(existing, k, v)
+            else:
+                db_prod = models.Product(**p_data)
+                db.add(db_prod)
+        db.commit()
+        print(f"[SEED] Successfully updated database to exactly 30 products.")
+
+    # 3. Users (Ensure default staff & customer accounts)
+    users_data = [
+        {"email": "admin@fredybills.ph", "name": "Maria Administrator", "role": "Administrator", "phone": "+63 917 111 2222"},
+        {"email": "counter@fredybills.ph", "name": "Carlos Counter", "role": "Counter Staff", "phone": "+63 917 333 4444"},
+        {"email": "baker@fredybills.ph", "name": "Chef Fredy", "role": "Baker", "phone": "+63 917 555 6666"},
+        {"email": "delivery@fredybills.ph", "name": "Rico Rider", "role": "Delivery Staff", "phone": "+63 917 777 8888"},
+        {"email": "customer@fredybills.ph", "name": "Juan Dela Cruz", "role": "Customer", "phone": "+63 917 999 0000", "address": "123 Mabini St, Cebu City"}
     ]
+    for u in users_data:
+        existing_user = db.query(models.User).filter(models.User.email == u["email"]).first()
+        if existing_user:
+            existing_user.role = u["role"]
+            existing_user.name = u["name"]
+            if "phone" in u:
+                existing_user.phone = u["phone"]
+            if "address" in u:
+                existing_user.address = u["address"]
+        else:
+            user = models.User(
+                email=u["email"],
+                password_hash=get_password_hash("password123"),
+                name=u["name"],
+                role=u["role"],
+                phone=u.get("phone", ""),
+                address=u.get("address", ""),
+                is_active=True
+            )
+            db.add(user)
+    db.commit()
 
-    for prod in products_data:
-        db_prod = models.Product(
-            id=prod["id"],
-            name=prod["name"],
-            category_id=prod["category_id"],
-            price=prod["price"],
-            cost_price=prod["cost_price"],
-            image=prod["image"],
-            description=prod["description"],
-            short_description=prod["short_description"],
-            allergens_json=prod["allergens_json"],
-            badge=prod["badge"],
-            is_featured=prod["is_featured"],
-            rating=prod["rating"],
-            sizes_json=prod["sizes_json"],
-            in_stock=prod["in_stock"],
-            stock_quantity=prod["stock_quantity"]
-        )
-        db.add(db_prod)
-
-    # 3. Suppliers
-    suppliers_data = [
-      {"name": "Normandy European Dairy Imports", "contact_person": "Pierre Dupont", "email": "orders@normandydairy.ph", "phone": "+63 2 8812 4433", "address": "Mandaue City, Cebu", "lead_time_days": 4},
-      {"name": "Bohol Purple Yam & Agriculture Co-op", "contact_person": "Santos Alcala", "email": "supply@boholyam.ph", "phone": "+63 38 501 8899", "address": "Tagbilaran City, Bohol", "lead_time_days": 3},
-      {"name": "Universal Organic Mills Corp", "contact_person": "Grace Tan", "email": "sales@universalflour.ph", "phone": "+63 32 345 7788", "address": "Cebu South Port, Cebu City", "lead_time_days": 2}
-    ]
-
-    for s in suppliers_data:
-        db_s = models.Supplier(name=s["name"], contact_person=s["contact_person"], email=s["email"], phone=s["phone"], address=s["address"], lead_time_days=s["lead_time_days"])
-        db.add(db_s)
-    db.flush()
-
-    # 4. Inventory Items
-    inventory_data = [
-      {"item_name": "Organic Bread Flour T65", "category": "Flour & Grains", "unit": "kg", "current_stock": 250.0, "minimum_stock": 50.0, "unit_cost": 75.0, "supplier_id": 3},
-      {"item_name": "French Cultured Butter 84% AOC", "category": "Dairy & Fats", "unit": "kg", "current_stock": 85.0, "minimum_stock": 20.0, "unit_cost": 480.0, "supplier_id": 1},
-      {"item_name": "Pure Bohol Purple Yam Halaya", "category": "Fillings & Fruits", "unit": "kg", "current_stock": 45.0, "minimum_stock": 15.0, "unit_cost": 320.0, "supplier_id": 2},
-      {"item_name": "Callebaut 70% Dark Chocolate Callets", "category": "Chocolate & Cocoa", "unit": "kg", "current_stock": 60.0, "minimum_stock": 15.0, "unit_cost": 650.0, "supplier_id": 1},
-      {"item_name": "Aged Queso de Bola Shavings", "category": "Dairy & Fats", "unit": "kg", "current_stock": 25.0, "minimum_stock": 10.0, "unit_cost": 550.0, "supplier_id": 1},
-      {"item_name": "Fresh Free-Range Eggs", "category": "Eggs & Dairy", "unit": "trays", "current_stock": 40.0, "minimum_stock": 10.0, "unit_cost": 220.0, "supplier_id": 2},
-      {"item_name": "Kraft Bakery Box (8x8x4)", "category": "Packaging", "unit": "pcs", "current_stock": 350.0, "minimum_stock": 100.0, "unit_cost": 18.0, "supplier_id": 3}
-    ]
-
-    for inv in inventory_data:
-        db_inv = models.InventoryItem(
-            item_name=inv["item_name"],
-            category=inv["category"],
-            unit=inv["unit"],
-            current_stock=inv["current_stock"],
-            minimum_stock=inv["minimum_stock"],
-            unit_cost=inv["unit_cost"],
-            supplier_id=inv["supplier_id"]
-        )
-        db.add(db_inv)
-
-    # 5. Default 5 Role Users
-    default_users = [
-      {"name": "Admin Maria", "email": "admin@fredybills.ph", "role": "Administrator", "phone": "+63 917 555 6677", "address": "Executive Office, Cebu City"},
-      {"name": "Elena Morales", "email": "counter@fredybills.ph", "role": "Counter Staff", "phone": "+63 918 222 3344", "address": "Mabini Branch, Cebu City"},
-      {"name": "Chef Fredy", "email": "baker@fredybills.ph", "role": "Baker", "phone": "+63 917 333 4455", "address": "Central Kitchen, Cebu City"},
-      {"name": "Rico Dalisay", "email": "delivery@fredybills.ph", "role": "Delivery Staff", "phone": "+63 919 444 5566", "address": "Cebu City Logistics Hub"},
-      {"name": "Juan Dela Cruz", "email": "customer@fredybills.ph", "role": "Customer", "phone": "+63 917 123 4567", "address": "Unit 12B, Horizon Tower, IT Park, Lahug, Cebu City"}
-    ]
-
-    for u in default_users:
-        db_user = models.User(
-            name=u["name"],
-            email=u["email"],
-            password_hash=get_password_hash("password123"),
-            role=u["role"],
-            phone=u["phone"],
-            address=u["address"],
-            is_active=True
-        )
-        db.add(db_user)
-
-    # 6. Branches & Promos
+    # 4. Branches
     branches_data = [
-      {"name": "Mabini Main Flagship", "address": "124 Mabini St, Cebu City", "phone": "+63 32 412 8891", "hours": "7:00 AM - 8:00 PM"},
-      {"name": "IT Park Bakery & Cafe", "address": "G/F Skyrise 4, Cebu IT Park, Lahug", "phone": "+63 32 231 9900", "hours": "6:30 AM - 10:00 PM"},
-      {"name": "Banilad Town Kitchen", "address": "Gov. Cuenco Ave, Banilad, Cebu City", "phone": "+63 32 344 7712", "hours": "7:00 AM - 7:30 PM"}
+        {"name": "Mabini Main Flagship", "address": "452 A. Mabini Street, Ermita, Manila", "phone": "(02) 8523-9901", "hours": "6:00 AM - 9:00 PM"},
+        {"name": "Cebu IT Park Express", "address": "G/F Skyrise 4, Cebu IT Park, Apas, Cebu City", "phone": "(032) 412-8822", "hours": "7:00 AM - 10:00 PM"},
+        {"name": "BGC High Street Boutique", "address": "7th Ave corner 28th St, BGC, Taguig City", "phone": "(02) 8810-4455", "hours": "8:00 AM - 10:00 PM"}
     ]
     for b in branches_data:
-        db.add(models.Branch(name=b["name"], address=b["address"], phone=b["phone"], hours=b["hours"]))
-
-    promos_data = [
-      {"code": "FREDY10", "discount_percent": 10.0, "free_shipping": False, "name": "10% Welcome Bakery Offer"},
-      {"code": "FREESHIP", "discount_percent": 0.0, "free_shipping": True, "name": "Free Delivery Discount"}
-    ]
-    for p in promos_data:
-        db.add(models.PromoCode(code=p["code"], discount_percent=p["discount_percent"], free_shipping=p["free_shipping"], name=p["name"]))
-
-    # 7. System Settings
-    settings_data = [
-      {"key": "store_name", "value": "Fredy Bills Artisan Bakery", "description": "Official business name"},
-      {"key": "vat_rate", "value": "12.0", "description": "Value added tax percentage"},
-      {"key": "delivery_fee_base", "value": "80.0", "description": "Base courier delivery fee in PHP"},
-      {"key": "free_delivery_threshold", "value": "1500.0", "description": "Minimum order total for free delivery"},
-      {"key": "order_auto_confirm", "value": "true", "description": "Automatically queue production on order placement"}
-    ]
-    for st in settings_data:
-        db.add(models.SystemSetting(key=st["key"], value=st["value"], description=st["description"]))
-
-    # 8. Sample Production Task & Initial Order
-    db.flush()
-    sample_order = models.Order(
-        id="FB-8942",
-        customer_name="Juan Dela Cruz",
-        customer_email="customer@fredybills.ph",
-        customer_phone="+63 917 123 4567",
-        fulfillment="delivery",
-        address="Unit 12B, Horizon Tower, IT Park, Lahug, Cebu City",
-        branch_name="Mabini Main Flagship",
-        payment_method="GCash",
-        payment_status="Paid",
-        status="preparing",
-        status_step=3,
-        subtotal=1530.0,
-        discount=153.0,
-        delivery_fee=0.0,
-        total=1377.0,
-        estimated_time="Estimated 35-45 mins",
-        timeline_json=json.dumps([
-            {"step": "Order Placed", "time": "08:15 AM", "done": True},
-            {"step": "Confirmed by Bakery", "time": "08:17 AM", "done": True},
-            {"step": "Preparing in Kitchen", "time": "08:25 AM", "active": True},
-            {"step": "Ready for Dispatch", "time": "Pending", "done": False},
-            {"step": "Out for Delivery", "time": "Pending", "done": False},
-            {"step": "Delivered", "time": "Pending", "done": False}
-        ]),
-        notes="Please slice sourdough thinly"
-    )
-    db.add(sample_order)
-    db.flush()
-
-    db.add(models.OrderItem(order_id="FB-8942", product_id="p101", product_name="Ube Halaya Layer Cake (6-inch)", quantity=1, unit_price=1250.0, options_json="{}"))
-    db.add(models.OrderItem(order_id="FB-8942", product_id="p201", product_name="36-Hour Country Sourdough Batard", quantity=1, unit_price=280.0, options_json="{}"))
-    db.add(models.Payment(order_id="FB-8942", payment_method="GCash", amount=1377.0, status="Completed", reference_number="GCASH-984210", notes="Paid via E-Wallet"))
-    db.add(models.SaleRecord(order_id="FB-8942", total_amount=1377.0, net_amount=1377.0, tax_amount=147.53, discount_amount=153.0, cost_amount=578.34, profit_amount=798.66))
-    db.add(models.DeliveryRecord(order_id="FB-8942", delivery_staff_id=4, status="Assigned", customer_name="Juan Dela Cruz", customer_phone="+63 917 123 4567", delivery_address="Unit 12B, Horizon Tower, IT Park, Lahug, Cebu City"))
-    db.add(models.ProductionTask(task_code="PRD-101", product_id="p101", product_name="Ube Halaya Layer Cake", target_quantity=4, completed_quantity=1, status="Preparing", assigned_baker_id=3, scheduled_date="Today", notes="Morning celebration batch"))
-
+        if not db.query(models.Branch).filter(models.Branch.name == b["name"]).first():
+            db.add(models.Branch(**b))
     db.commit()
-    print("[SEED] Enterprise Database Seeding Complete!")
+
+    # 5. Inventory Items
+    inventory_data = [
+        {"item_name": "Premium Unbleached Bread Flour", "category": "Flour", "current_stock": 250.0, "minimum_stock": 50.0, "unit": "kg", "unit_cost": 48.0},
+        {"item_name": "Normandy Churned 82% Butter", "category": "Dairy", "current_stock": 80.0, "minimum_stock": 20.0, "unit": "kg", "unit_cost": 380.0},
+        {"item_name": "Belgian 70% Dark Chocolate Callets", "category": "Chocolate", "current_stock": 45.0, "minimum_stock": 15.0, "unit": "kg", "unit_cost": 650.0},
+        {"item_name": "Authentic Boholano Ube Halaya", "category": "Specialty", "current_stock": 35.0, "minimum_stock": 10.0, "unit": "kg", "unit_cost": 290.0},
+        {"item_name": "Instant Dry Active Yeast (SAF)", "category": "Leavening", "current_stock": 25.0, "minimum_stock": 5.0, "unit": "kg", "unit_cost": 210.0},
+        {"item_name": "Pure Golden Muscovado Sugar", "category": "Sweetener", "current_stock": 120.0, "minimum_stock": 30.0, "unit": "kg", "unit_cost": 65.0}
+    ]
+    for inv in inventory_data:
+        if not db.query(models.InventoryItem).filter(models.InventoryItem.item_name == inv["item_name"]).first():
+            db.add(models.InventoryItem(**inv))
+    db.commit()
+
+    # 6. Promo Codes
+    promos_data = [
+        {"code": "FREDY10", "discount_percent": 10.0, "name": "10% Welcome Bakery Offer", "is_active": True},
+        {"code": "BAKERY20", "discount_percent": 20.0, "name": "20% Flash Weekend Discount", "is_active": True},
+        {"code": "VIPBAKER", "discount_percent": 15.0, "name": "15% Staff and VIP Privilege", "is_active": True}
+    ]
+    for pr in promos_data:
+        if not db.query(models.PromoCode).filter(models.PromoCode.code == pr["code"]).first():
+            db.add(models.PromoCode(**pr))
+    db.commit()
+
+    print("[SEED] Fredy Bills Bakery Enterprise Database Seeding Complete!")

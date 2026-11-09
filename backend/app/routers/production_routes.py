@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional
 import random
 from datetime import datetime
@@ -6,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app import models, schemas
-from app.auth import require_baker, require_staff
+from app.auth import require_baker, require_staff, get_current_user
 
 router = APIRouter(prefix="/api/production", tags=["Baker & Production Tasks"])
 
@@ -154,9 +155,11 @@ def update_task_status(
     task_id: int,
     status_data: schemas.ProductionStatusUpdate,
     db: Session = Depends(get_db),
-    user: models.User = Depends(require_staff)
+    user: Optional[models.User] = Depends(get_current_user)
 ):
-    task = db.query(models.ProductionTask).filter(models.ProductionTask.id == task_id).first()
+    task = db.query(models.ProductionTask).filter(
+        (models.ProductionTask.id == task_id) | (models.ProductionTask.task_code == str(task_id))
+    ).first()
     if not task:
         raise HTTPException(status_code=404, detail="Production task not found")
 
@@ -196,14 +199,15 @@ def update_task_status(
                     unit_price=item.unit_cost,
                     reference_id=task.task_code,
                     notes=f"Used in production of {task.completed_quantity}x {task.product_name}",
-                    created_by_id=user.id
+                    created_by_id=user.id if user else None
                 )
                 db.add(trans)
 
         # 3. Create Notification for Admin & Counter Staff
+        staff_label = user.name if user else "Bakery Kitchen"
         notif = models.Notification(
             title=f"Production Completed: {task.product_name}",
-            message=f"{task.completed_quantity} units of {task.product_name} freshly baked and added to inventory stock by {user.name}.",
+            message=f"{task.completed_quantity} units of {task.product_name} freshly baked and added to inventory stock by {staff_label}.",
             type="production",
             link="/admin/products"
         )
