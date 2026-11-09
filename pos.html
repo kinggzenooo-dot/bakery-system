@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fredy Bills — POS Counter Staff Terminal</title>
+  <meta name="description" content="Fredy Bills Bakery Point-of-Sale Terminal for Counter Staff. Process walk-in orders, manage cart, print receipts.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    @media print {
+      body > *:not(#pos-root) { display: none; }
+      #pos-root > *:not(.modal-overlay) { display: none; }
+      .receipt-print-box { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="pos-root"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    // =============================================
+    // COUNTER STAFF POS TERMINAL — Standalone Page
+    // =============================================
+    document.addEventListener('DOMContentLoaded', async () => {
+
+      const savedTheme = localStorage.getItem('fb_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+
+      let currentUser = null;
+      try {
+        const stored = localStorage.getItem('fb_user');
+        currentUser = stored ? JSON.parse(stored) : null;
+      } catch (e) {}
+
+      if (!currentUser) { window.location.href = 'login.html'; return; }
+      if (currentUser.role !== 'Counter Staff') {
+        alert(`Access Denied. This portal is for Counter Staff only.\nYou are logged in as: ${currentUser.role}`);
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.title = `POS Terminal — ${currentUser.name} | Fredy Bills`;
+      renderPOSPortal(currentUser);
+    });
+
+    async function renderPOSPortal(user) {
+      const root = document.getElementById('pos-root');
+
+      const state = {
+        currentUser: user,
+        theme: localStorage.getItem('fb_theme') || 'dark',
+        categories: window.BAKERY_DATA?.categories || [],
+        products: window.BAKERY_DATA?.products || [],
+        customersList: [],
+        orders: [],
+        posCategory: 'all',
+        posSearch: '',
+        posCart: [],
+        posCustomerName: 'Walk-in Guest',
+        posCustomerPhone: '',
+        posPaymentMethod: 'Cash',
+        posCashTendered: 0,
+        posDiscountPercent: 0,
+        posReceiptModalOpen: false,
+        posLastReceipt: null,
+        toasts: []
+      };
+
+      window.store = {
+        state,
+        notify() { render(); },
+        toggleTheme() {
+          state.theme = state.theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', state.theme);
+          localStorage.setItem('fb_theme', state.theme);
+          this.showToast(`Switched to ${state.theme === 'dark' ? 'Dark' : 'Light'} Mode`);
+          this.notify();
+        },
+        logoutUser() {
+          localStorage.removeItem('fb_user');
+          localStorage.removeItem('fb_token');
+          window.location.href = 'login.html';
+        },
+        async syncPOSData() {
+          try {
+            const [cats, prods] = await Promise.all([
+              API.getCategories().catch(() => []),
+              API.getProducts({ inStockOnly: false }).catch(() => [])
+            ]);
+            if (cats.length) state.categories = cats;
+            if (prods.length) state.products = prods;
+            this.notify();
+          } catch (e) { console.warn('[POS] Sync error:', e); }
+        },
+        setPOSCategory(cat) { state.posCategory = cat; this.notify(); },
+        setPOSSearch(q) { state.posSearch = q; this.notify(); },
+        addToPOSCart(product) {
+          const existing = state.posCart.find(i => i.id === product.id);
+          if (existing) { existing.quantity += 1; }
+          else { state.posCart.push({ id: product.id, name: product.name, price: product.price, unitPrice: product.price, quantity: 1 }); }
+          this.notify();
+        },
+        updatePOSCartQty(index, newQty) {
+          if (newQty <= 0) state.posCart.splice(index, 1);
+          else state.posCart[index].quantity = newQty;
+          this.notify();
+        },
+        clearPOSCart() {
+          state.posCart = [];
+          state.posCustomerName = 'Walk-in Guest';
+          state.posCustomerPhone = '';
+          state.posDiscountPercent = 0;
+          state.posCashTendered = 0;
+          this.notify();
+        },
+        getPOSCalculations() {
+          const subtotal = state.posCart.reduce((acc, i) => acc + (i.unitPrice * i.quantity), 0);
+          const discount = subtotal * (state.posDiscountPercent / 100);
+          const total = Math.max(0, subtotal - discount);
+          const change = Math.max(0, state.posCashTendered - total);
+          return { subtotal, discount, total, change };
+        },
+        async submitPOSOrder() {
+          if (state.posCart.length === 0) { this.showToast('Cart is empty!', 'error'); return; }
+          const { subtotal, discount, total, change } = this.getPOSCalculations();
+          try {
+            const items = state.posCart.map(i => ({ product_id: i.id, product_name: i.name, quantity: i.quantity, unit_price: i.unitPrice, total_price: i.unitPrice * i.quantity }));
+            const created = await API.createOrder({
+              customer_name: state.posCustomerName || 'Walk-in Guest',
+              customer_email: 'pos_walkin@fredybills.ph',
+              customer_phone: state.posCustomerPhone || '+63 900 000 0000',
+              fulfillment_type: 'dine-in',
+              delivery_address: 'Counter POS',
+              branch_name: 'IT Park Cebu Flagship',
+              payment_method: state.posPaymentMethod,
+              subtotal, discount, delivery_fee: 0, total, items
+            });
+            await API.updateOrderStatus(created.id, 'confirmed', 'POS Payment Completed').catch(() => {});
+            state.posLastReceipt = { ...created, items: [...state.posCart], cashTendered: state.posCashTendered, change, cashier: user.name, subtotal, discount, total };
+            state.posReceiptModalOpen = true;
+            this.clearPOSCart();
+            this.showToast(`Order #${created.id} completed!`);
+          } catch (e) { this.showToast(`POS Error: ${e.message}`, 'error'); }
+        },
+        closePOSReceipt() {
+          state.posReceiptModalOpen = false;
+          this.notify();
+        },
+        showToast(message, type = 'success') {
+          const id = Date.now();
+          state.toasts.push({ id, message, type });
+          this.notify();
+          setTimeout(() => { state.toasts = state.toasts.filter(t => t.id !== id); this.notify(); }, 4000);
+        }
+      };
+
+      function render() {
+        if (typeof C === 'undefined') return;
+        root.innerHTML = `
+          ${C.CounterStaffApp(state)}
+          ${C.Toasts(state)}
+        `;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'js/components.js';
+      script.onload = () => {
+        store.syncPOSData();
+        render();
+      };
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>

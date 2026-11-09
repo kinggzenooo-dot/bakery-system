@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fredy Bills — Administrator Dashboard</title>
+  <meta name="description" content="Fredy Bills Bakery Administrator Management Portal. Full system control, reports, inventory, staff, and operations.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="admin-root"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    // =============================================
+    // ADMINISTRATOR PORTAL — Standalone Role Page
+    // =============================================
+    document.addEventListener('DOMContentLoaded', async () => {
+
+      // Apply saved theme
+      const savedTheme = localStorage.getItem('fb_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+
+      // Verify role access
+      let currentUser = null;
+      try {
+        const stored = localStorage.getItem('fb_user');
+        currentUser = stored ? JSON.parse(stored) : null;
+      } catch (e) {}
+
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      if (currentUser.role !== 'Administrator') {
+        alert(`Access Denied. This portal requires Administrator role. You are logged in as: ${currentUser.role}`);
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Bootstrap state & render
+      document.title = `Admin Dashboard — ${currentUser.name} | Fredy Bills`;
+      renderAdminPortal(currentUser);
+    });
+
+    async function renderAdminPortal(user) {
+      const root = document.getElementById('admin-root');
+
+      // Reactive mini-state for the admin portal
+      const state = {
+        currentUser: user,
+        theme: localStorage.getItem('fb_theme') || 'dark',
+        adminTab: 'dashboard',
+        adminProductModalOpen: false,
+        adminEditingProduct: null,
+        adminCategoryModalOpen: false,
+        adminInventoryModalOpen: false,
+        adminEditingInventory: null,
+        adminRestockModalOpen: false,
+        adminRestockItem: null,
+        adminUserModalOpen: false,
+        adminPOModalOpen: false,
+        adminOrderModalOpen: false,
+        adminViewingOrder: null,
+        categories: window.BAKERY_DATA?.categories || [],
+        products: window.BAKERY_DATA?.products || [],
+        orders: [],
+        inventory: [],
+        productionTasks: [],
+        deliveries: [],
+        suppliers: [],
+        purchaseOrders: [],
+        usersList: [],
+        salesReport: null,
+        notifications: [],
+        toasts: []
+      };
+
+      // Mini store for this standalone page
+      window.store = {
+        state,
+        notify() { render(); },
+        toggleTheme() {
+          state.theme = state.theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', state.theme);
+          localStorage.setItem('fb_theme', state.theme);
+          this.showToast(`Switched to ${state.theme === 'dark' ? 'Dark' : 'Light'} Mode`);
+          this.notify();
+        },
+        logoutUser() {
+          localStorage.removeItem('fb_user');
+          localStorage.removeItem('fb_token');
+          window.location.href = 'login.html';
+        },
+        setAdminTab(tab) {
+          state.adminTab = tab;
+          this.syncAdminData();
+          this.notify();
+        },
+        async syncAdminData() {
+          try {
+            const [orders, inventory, prodTasks, deliveries, suppliers, pos, users, sales, cats, prods] = await Promise.all([
+              API.getOrders().catch(() => []),
+              API.getInventory().catch(() => []),
+              API.getProductionTasks().catch(() => []),
+              API.getDeliveries().catch(() => []),
+              API.getSuppliers().catch(() => []),
+              API.getPurchaseOrders().catch(() => []),
+              API.getUsers().catch(() => []),
+              API.getSalesReport().catch(() => null),
+              API.getCategories().catch(() => []),
+              API.getProducts().catch(() => [])
+            ]);
+            if (orders) state.orders = orders;
+            if (inventory) state.inventory = inventory;
+            if (prodTasks) state.productionTasks = prodTasks;
+            if (deliveries) state.deliveries = deliveries;
+            if (suppliers) state.suppliers = suppliers;
+            if (pos) state.purchaseOrders = pos;
+            if (users) state.usersList = users;
+            if (sales) state.salesReport = sales;
+            if (cats && cats.length) state.categories = cats;
+            if (Array.isArray(prods)) state.products = prods;
+            this.notify();
+          } catch (e) { console.warn('[Admin] Sync error:', e); }
+        },
+        async saveProduct(payload, imageFile) {
+          const btn = document.getElementById('save-prod-btn');
+          if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+          try {
+            let imageUrl = payload.image || '';
+            if (imageFile) {
+              this.showToast('Uploading image...', 'info');
+              try {
+                const res = await API.uploadImage(imageFile);
+                if (res && res.url) imageUrl = res.url;
+              } catch (uploadErr) {
+                this.showToast('Image upload failed, saving without image.', 'error');
+              }
+            }
+            const data = { ...payload, image: imageUrl };
+
+            if (state.adminEditingProduct) {
+              await API.updateProduct(state.adminEditingProduct.id, data);
+              this.showToast(`"${data.name}" updated successfully!`);
+            } else {
+              await API.createProduct(data);
+              this.showToast(`"${data.name}" added to menu!`);
+            }
+
+            state.adminProductModalOpen = false;
+            state.adminEditingProduct = null;
+            this.notify(); // close modal immediately
+
+            // Now fetch fresh products and re-render the table
+            try {
+              const freshProds = await API.getProducts();
+              if (Array.isArray(freshProds)) {
+                state.products = freshProds;
+                this.notify();
+              }
+            } catch (e) {
+              await this.syncAdminData();
+            }
+
+          } catch (e) {
+            this.showToast(`Save failed: ${e.message}`, 'error');
+            if (btn) { btn.disabled = false; btn.textContent = 'Save Product'; }
+          }
+        },
+        async deleteProduct(id) {
+          if (!confirm('Delete this product?')) return;
+          await API.deleteProduct(id).then(() => { this.showToast('Product deleted'); this.syncAdminData(); }).catch(e => this.showToast(e.message, 'error'));
+        },
+        async saveInventoryItem(data) {
+          try {
+            if (state.adminEditingInventory) {
+              await API.updateInventoryItem(state.adminEditingInventory.id, data);
+              this.showToast('Inventory item updated!');
+            } else {
+              await API.createInventoryItem(data);
+              this.showToast('Raw material added!');
+            }
+            state.adminInventoryModalOpen = false;
+            state.adminEditingInventory = null;
+            this.syncAdminData();
+          } catch (e) { this.showToast(e.message, 'error'); }
+        },
+        async restockInventoryItem(itemId, qty, cost, notes) {
+          try {
+            await API.recordStockTransaction({ inventory_item_id: itemId, transaction_type: 'IN', quantity: parseFloat(qty), unit_price: parseFloat(cost), notes: notes || 'Manual Restock' });
+            this.showToast('Stock inflowed successfully!');
+            state.adminRestockModalOpen = false;
+            state.adminRestockItem = null;
+            this.syncAdminData();
+          } catch (e) { this.showToast(e.message, 'error'); }
+        },
+        async receivePurchaseOrder(poId) {
+          try {
+            await API.receivePurchaseOrder(poId);
+            this.showToast(`PO #${poId} received & inventory updated!`);
+            this.syncAdminData();
+          } catch (e) { this.showToast(e.message, 'error'); }
+        },
+        async createStaffUser(data) {
+          try {
+            await API.createUser(data);
+            this.showToast(`Staff "${data.name}" created!`);
+            state.adminUserModalOpen = false;
+            this.syncAdminData();
+          } catch (e) { this.showToast(e.message, 'error'); }
+        },
+        async deleteStaffUser(userId) {
+          if (!confirm('Remove this staff user?')) return;
+          await API.deleteUser(userId).then(() => { this.showToast('User removed'); this.syncAdminData(); }).catch(e => this.showToast(e.message, 'error'));
+        },
+        showToast(message, type = 'success') {
+          const id = Date.now();
+          state.toasts.push({ id, message, type });
+          this.notify();
+          setTimeout(() => {
+            state.toasts = state.toasts.filter(t => t.id !== id);
+            this.notify();
+          }, 4000);
+        }
+      };
+
+      // Render function
+      function render() {
+        // Load components.js dynamically if not yet loaded
+        if (typeof C === 'undefined') return;
+        root.innerHTML = `
+          ${C.AdminApp(state)}
+          ${C.Toasts(state)}
+        `;
+      }
+
+      // Load components.js then render
+      const script = document.createElement('script');
+      script.src = 'js/components.js';
+      script.onload = () => {
+        store.syncAdminData();
+        render();
+      };
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>

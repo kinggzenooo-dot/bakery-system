@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fredy Bills — Delivery Staff Courier Portal</title>
+  <meta name="description" content="Fredy Bills Bakery Courier Dispatch Portal for Delivery Staff. Manage active deliveries, update status, report issues.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="delivery-root"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    // =============================================
+    // DELIVERY STAFF COURIER PORTAL — Standalone Page
+    // =============================================
+    document.addEventListener('DOMContentLoaded', async () => {
+
+      const savedTheme = localStorage.getItem('fb_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+
+      let currentUser = null;
+      try {
+        const stored = localStorage.getItem('fb_user');
+        currentUser = stored ? JSON.parse(stored) : null;
+      } catch (e) {}
+
+      if (!currentUser) { window.location.href = 'login.html'; return; }
+      if (currentUser.role !== 'Delivery Staff') {
+        alert(`Access Denied. This portal is for Delivery Staff only.\nYou are logged in as: ${currentUser.role}`);
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.title = `Courier Portal — ${currentUser.name} | Fredy Bills`;
+      renderDeliveryPortal(currentUser);
+    });
+
+    async function renderDeliveryPortal(user) {
+      const root = document.getElementById('delivery-root');
+
+      const state = {
+        currentUser: user,
+        theme: localStorage.getItem('fb_theme') || 'dark',
+        deliveries: [],
+        deliveryFilterStatus: 'All',
+        deliveryIssueModalOpen: false,
+        deliveryActiveDelivery: null,
+        toasts: []
+      };
+
+      window.store = {
+        state,
+        notify() { render(); },
+        toggleTheme() {
+          state.theme = state.theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', state.theme);
+          localStorage.setItem('fb_theme', state.theme);
+          this.showToast(`Switched to ${state.theme === 'dark' ? 'Dark' : 'Light'} Mode`);
+          this.notify();
+        },
+        logoutUser() {
+          localStorage.removeItem('fb_user');
+          localStorage.removeItem('fb_token');
+          window.location.href = 'login.html';
+        },
+        async syncDeliveryData() {
+          try {
+            const deliveries = await API.getDeliveries().catch(() => []);
+            if (deliveries) state.deliveries = deliveries;
+            this.notify();
+          } catch (e) { console.warn('[Delivery] Sync error:', e); }
+        },
+        async advanceDeliveryStatus(deliveryId, nextStatus, failureReason, proofNote) {
+          try {
+            const updated = await API.updateDeliveryStatus(deliveryId, nextStatus, failureReason || '', proofNote || '', user.id);
+            const idx = state.deliveries.findIndex(d => d.id === deliveryId);
+            if (idx > -1) state.deliveries[idx] = updated;
+            state.deliveryIssueModalOpen = false;
+            state.deliveryActiveDelivery = null;
+            this.showToast(`Delivery for Order #${updated.order_id} → ${nextStatus}`);
+            this.syncDeliveryData();
+          } catch (e) { this.showToast(`Error: ${e.message}`, 'error'); }
+        },
+        openDeliveryIssueModal(delivery) {
+          state.deliveryActiveDelivery = delivery;
+          state.deliveryIssueModalOpen = true;
+          this.notify();
+        },
+        closeDeliveryIssueModal() {
+          state.deliveryIssueModalOpen = false;
+          state.deliveryActiveDelivery = null;
+          this.notify();
+        },
+        showToast(message, type = 'success') {
+          const id = Date.now();
+          state.toasts.push({ id, message, type });
+          this.notify();
+          setTimeout(() => { state.toasts = state.toasts.filter(t => t.id !== id); this.notify(); }, 4000);
+        }
+      };
+
+      // Auto-refresh every 45 seconds
+      setInterval(() => store.syncDeliveryData(), 45000);
+
+      function render() {
+        if (typeof C === 'undefined') return;
+        root.innerHTML = `
+          ${C.DeliveryStaffApp(state)}
+          ${C.Toasts(state)}
+        `;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'js/components.js';
+      script.onload = () => {
+        store.syncDeliveryData();
+        render();
+      };
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+================================================================================
+FREDY BILLS BAKERY MANAGEMENT SYSTEM - DEPLOYMENT & PROJECT REFERENCE
+================================================================================
+File Generated: 2026-11-09
+Purpose: Single-file fast navigation reference for instructor, team, and deployment.
+
+--------------------------------------------------------------------------------
+1. SYSTEM ARCHITECTURE & PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+Project Name        : Fredy Bills Bakery Management System
+Architecture        : Decoupled Multi-Role Web App + FastAPI REST Backend
+Backend Framework   : FastAPI (Python 3.10+) with SQLAlchemy ORM & Pydantic v2
+Local Database      : SQLite (`backend/bakery.db`)
+Cloud Database      : Supabase (PostgreSQL - schema in `schema_supabase.sql`)
+Authentication      : JWT (JSON Web Tokens) with passlib / bcrypt password hashing
+Frontend Tech       : Native Modern JavaScript (ES6+), HTML5, CSS3 (No Node build required)
+
+--------------------------------------------------------------------------------
+2. ENVIRONMENT VARIABLES & KEYS
+--------------------------------------------------------------------------------
+[Backend Configuration] (`backend/app/config.py` & System Env)
+- DATABASE_URL              : sqlite:///./backend/bakery.db (or PostgreSQL URL for production)
+- SECRET_KEY                : fredy-bills-bakery-secret-key-2026-mse-super-secure
+- ALGORITHM                 : HS256
+- ACCESS_TOKEN_EXPIRE_MINUTES: 10080 (7 Days)
+
+[Supabase Cloud Configuration] (`.env`)
+- VITE_SUPABASE_URL         : https://pfwpcekkkfaqbquygryc.supabase.co
+- VITE_SUPABASE_ANON_KEY    : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmd3BjZWtra2ZhcWJxdXlncnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzOTYwOTQsImV4cCI6MjEwNDk3MjA5NH0.1IyTgo4QDOi4DoRyOyGgS--R9tBtBRrUkFx0TtyhjuE
+
+[Frontend API Base URL] (`js/api.js`)
+- Local Dev Base URL        : http://127.0.0.1:8000/api
+  *(Change this to your live production domain or reverse proxy when deployed)*
+
+--------------------------------------------------------------------------------
+3. DEFAULT ACCOUNTS & CREDENTIALS (FOR TESTING & DEMO)
+--------------------------------------------------------------------------------
+All default accounts share the same password:
+DEFAULT PASSWORD FOR ALL: password123
+
+1) Administrator
+   - Email                  : admin@fredybills.ph
+   - Password               : password123
+   - Full Name              : Admin Maria
+   - Accessible Portal Page : admin.html (or /static/admin.html)
+   - Scope                  : System config, inventory, staff, sales reports, user management
+
+2) Counter Staff (POS)
+   - Email                  : counter@fredybills.ph
+   - Password               : password123
+   - Full Name              : Elena Morales
+   - Accessible Portal Page : pos.html (or /static/pos.html)
+   - Scope                  : Point of Sale counter terminal, order checkout, receipt print
+
+3) Baker (Kitchen Production)
+   - Email                  : baker@fredybills.ph
+   - Password               : password123
+   - Full Name              : Chef Fredy
+   - Accessible Portal Page : baker.html (or /static/baker.html)
+   - Scope                  : Kitchen batch queue, production status, recipe/prep monitoring
+
+4) Delivery Staff (Logistics)
+   - Email                  : delivery@fredybills.ph
+   - Password               : password123
+   - Full Name              : Rico Dalisay
+   - Accessible Portal Page : delivery.html (or /static/delivery.html)
+   - Scope                  : Dispatch routing, dispatch proof, live order delivery updates
+
+5) Customer
+   - Email                  : customer@fredybills.ph
+   - Password               : password123
+   - Full Name              : Juan Dela Cruz
+   - Accessible Portal Page : index.html (or /static/index.html)
+   - Scope                  : Browse menu, place custom & standard orders, tracking, profile
+
+--------------------------------------------------------------------------------
+4. KEY PAGES & NAVIGATION MAP
+--------------------------------------------------------------------------------
+Frontend Files:
+- login.html    : Authentication gateway (Login, Register & 1-Click Role Switcher)
+- index.html    : Storefront for Customers (Menu, Cart, Online Ordering, Reviews)
+- pos.html      : Point of Sale terminal interface for counter cashiers
+- baker.html    : Kitchen / Production board for bakers to track active batches
+- delivery.html : Courier & logistics interface for drivers to mark deliveries
+- admin.html    : Comprehensive administrative and inventory dashboard
+
+Frontend Local Storage Keys:
+- `fb_token`    : Active JWT Bearer Token
+- `fb_user`     : Serialized JSON object of current authenticated user session
+- `fb_cart`     : Customer active shopping cart items
+
+--------------------------------------------------------------------------------
+5. BACKEND API ROUTES SUMMARY
+--------------------------------------------------------------------------------
+Interactive Swagger Documentation : http://127.0.0.1:8000/docs
+Alternative Redoc Documentation   : http://127.0.0.1:8000/redoc
+API Health Check Endpoint         : GET /api/health
+
+Core Route Prefixes:
+- /api/auth       : POST /login, POST /register, GET /me
+- /api/users      : GET /, POST /, PUT /{id}, DELETE /{id}
+- /api/categories : GET /, POST /, PATCH /{id}, DELETE /{id}
+- /api/products   : Full CRUD, stock adjustment, category filtering
+- /api/orders     : Order creation, payment logging, status transition
+- /api/inventory  : Ingredient stock monitoring, reorder alerts, supplier ties
+- /api/production : Kitchen batches, batch status (pending, baking, completed)
+- /api/delivery   : Dispatch assignment, delivery route logs, status tags
+- /api/suppliers  : Vendor directories and lead times
+- /api/reports    : Financial analytics, top seller stats, daily summaries
+- /api/store      : Store branches, operational hours, active promo banners
+- /api/upload     : POST /upload/image (Multipart image uploads)
+
+--------------------------------------------------------------------------------
+6. QUICK RUN & DEPLOYMENT INSTRUCTIONS
+--------------------------------------------------------------------------------
+A. LOCAL DEVELOPMENT RUN:
+   1. Open terminal in the project directory:
+      cd "d:\MSEPROJECT\bakery system"
+
+   2. Install backend dependencies:
+      pip install -r backend/requirements.txt
+
+   3. Start backend server:
+      python backend/run.py
+      (or: uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload)
+
+   4. Open web browser:
+      - App Login : http://127.0.0.1:8000/static/login.html
+      - API Docs  : http://127.0.0.1:8000/docs
+
+B. PRODUCTION DEPLOYMENT CHECKLIST:
+   1. Cloud Host Options:
+      - Render.com / Railway.app / Fly.io for FastAPI backend
+      - Vercel / Netlify / GitHub Pages for Frontend static files, OR serve through FastAPI static mounts
+      - Supabase / Neon / ElephantSQL for managed PostgreSQL database
+   2. Production Environment Variables:
+      - Set `DATABASE_URL` to your production PostgreSQL connection string
+      - Change `SECRET_KEY` to a cryptographically secure random 64-char string
+      - In `js/api.js`, update `API_BASE_URL` to your live backend domain (e.g., https://api.yourdomain.com/api)
+   3. Database Migration:
+      - Run `schema_supabase.sql` in Supabase SQL Editor if using Supabase PostgreSQL.
+================================================================================
