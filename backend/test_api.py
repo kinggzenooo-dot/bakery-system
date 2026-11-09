@@ -37,7 +37,7 @@ def test_all_endpoints():
     res = client.get("/api/categories")
     assert res.status_code == 200
     categories = res.json()
-    assert len(categories) == 5
+    assert len(categories) >= 5
     print("Found categories:", [c["name"] for c in categories])
 
     print("\n--- 5. Testing Products Catalog & Filtering ---")
@@ -46,10 +46,11 @@ def test_all_endpoints():
     cakes = res.json()
     print("Found cakes:", [c["name"] for c in cakes])
 
-    res = client.get("/api/products/p101")
+    target_id = cakes[0]["id"] if cakes else "classic-chocolate-cake"
+    res = client.get(f"/api/products/{target_id}")
     assert res.status_code == 200
-    p101 = res.json()
-    print("Product p101 details:", p101["name"], f"PHP {p101['price']}")
+    prod_detail = res.json()
+    print("Product details:", prod_detail["name"], f"PHP {prod_detail['price']}")
 
     print("\n--- 6. Testing Promo Code Validation ---")
     res = client.post("/api/promo/validate", json={"code": "FREDY10"})

@@ -1,0 +1,117 @@
+================================================================================
+FREDY BILLS BAKERY MANAGEMENT SYSTEM - DIRECTORY & FILE STRUCTURE
+================================================================================
+Generated: 2026-11-09
+Project Path: D:\MSEPROJECT\bakery system
+
+--------------------------------------------------------------------------------
+1. VISUAL DIRECTORY TREE
+--------------------------------------------------------------------------------
+
+bakery system/
+│
+├── .env                                 # Environment variables (Supabase URL, Anon Key, etc.)
+├── .gitignore                           # Git ignore rules (virtual environments, caches, DBs)
+├── add_features.sql                     # SQL migration script for additional database features
+├── admin.html                           # Administrator Dashboard & Management Portal UI
+├── baker.html                           # Baker / Production Staff Dashboard UI
+├── delivery.html                        # Delivery / Rider Dashboard UI
+├── important.txt                        # Project reference, credentials, endpoints & deployment guide
+├── index.html                           # Customer Landing Page / Public Storefront UI
+├── login.html                           # Multi-Role User Authentication & Login Portal UI
+├── pos.html                             # Point of Sale (POS) & Counter Staff Interface UI
+├── project_structure.txt                # Complete folder and file structure documentation (this file)
+├── schema_supabase.sql                  # Supabase PostgreSQL schema definition & DDL
+├── vercel.json                          # Vercel deployment configuration
+│
+├── backend/                             # FastAPI Python Backend Application
+│   ├── bakery.db                        # Local SQLite database file
+│   ├── requirements.txt                 # Python dependencies (fastapi, uvicorn, sqlalchemy, etc.)
+│   ├── run.py                           # Server startup script (Uvicorn runner)
+│   ├── test_api.py                      # API automated testing & validation script
+│   │
+│   ├── app/                             # Core Application Package
+│   │   ├── auth.py                      # Password hashing, JWT token creation & verification
+│   │   ├── config.py                    # App configuration, settings & environment variables
+│   │   ├── database.py                  # Database engine connection & session setup (SQLAlchemy)
+│   │   ├── main.py                      # FastAPI application entrypoint, CORS & route registration
+│   │   ├── models.py                    # SQLAlchemy ORM database models
+│   │   ├── schemas.py                   # Pydantic schemas for data validation & serialization
+│   │   ├── seed.py                      # Database seeding script (populates demo data)
+│   │   │
+│   │   └── routers/                     # API Route Handlers / Endpoints
+│   │       ├── auth_routes.py           # Authentication routes (login, token refresh, current user)
+│   │       ├── delivery_routes.py       # Delivery management & tracking endpoints
+│   │       ├── inventory_routes.py      # Ingredients and raw stock inventory endpoints
+│   │       ├── order_routes.py          # POS & online order processing endpoints
+│   │       ├── product_routes.py        # Bakery product catalog CRUD endpoints
+│   │       ├── production_routes.py     # Production batch planning & status endpoints
+│   │       ├── report_routes.py         # Sales analytics, financial reports & KPI metrics
+│   │       ├── store_routes.py          # Store information & branch configuration endpoints
+│   │       ├── supplier_routes.py       # Supplier and purchase order management endpoints
+│   │       ├── upload_routes.py         # Image & media file upload handler endpoints
+│   │       └── user_routes.py           # User management & role assignment endpoints
+│   │
+│   └── uploads/                         # Backend uploaded media storage (product photos)
+│       ├── img_01dacc7d815c.jpg
+│       ├── img_021fe891787f.webp
+│       ├── img_10cf4bea0197.jpg
+│       ├── img_13853aa69f57.jpg
+│       ├── img_188364727efc.webp
+│       ├── img_28b4700a9033.jpg
+│       ├── img_3fe241e4e971.jpg
+│       ├── img_602d2bf0e8c0.jpg
+│       ├── img_73eb6cef1fe8.jpg
+│       ├── img_8246abe37dfe.jpg
+│       ├── img_9d3f216aae52.webp
+│       ├── img_b097484dd9de.jpg
+│       ├── img_b5dfc9b7cf93.jpg
+│       ├── img_bec791c49888.jpg
+│       ├── img_c175c48f76a4.webp
+│       ├── img_c4b9c73852fa.jpg
+│       ├── img_db8d959bfeb3.jpg
+│       └── img_fa11d21daf52.webp
+│
+├── css/                                 # Styling & Presentation
+│   └── styles.css                       # Unified CSS stylesheet for all portals & components
+│
+├── js/                                  # Frontend Client Scripts (Vanilla ES6 JavaScript)
+│   ├── api.js                           # Centralized API fetch wrapper & backend communication
+│   ├── app.js                           # Application initialization & page workflow logic
+│   ├── components.js                    # Reusable UI component generators (cards, modals, badges)
+│   ├── data.js                          # Static fallback data & lookup tables
+│   ├── icons.js                         # SVG icon definitions & icon rendering helpers
+│   └── state.js                         # Global reactive state management & user session storage
+│
+├── menu/                                # Static Menu Assets & Sample Product Imagery
+│   ├── 054b1ae2136808ae87e264fb7724f4c3.webp
+│   ├── 8087022ca1695e49706814ff5cfd9535.jpg
+│   ├── moms-chocolate-cake-XL-RECIPE0918-10dde1dcd79b47b9876cda8812f11ad6.jpg
+│   ├── OIP (1).webp
+│   ├── OIP (2).webp
+│   ├── OIP (3).webp
+│   └── OIP.webp
+│
+└── uploads/                             # Root upload staging directory
+
+--------------------------------------------------------------------------------
+2. ROLE-BASED PORTALS & ENTRY POINTS
+--------------------------------------------------------------------------------
+- index.html    : Public storefront for customer viewing and ordering.
+- login.html    : Role-based authentication gate (redirects to assigned portal).
+- admin.html    : Full system management (products, inventory, staff, sales, reports).
+- pos.html      : Cashier & counter staff terminal for in-store order processing.
+- baker.html    : Kitchen / baking queue management for batch production.
+- delivery.html : Rider portal for order dispatch, pickup, and delivery confirmation.
+
+--------------------------------------------------------------------------------
+3. BACKEND ARCHITECTURE BREAKDOWN
+--------------------------------------------------------------------------------
+- Framework     : FastAPI (Python 3.10+) with Uvicorn ASGI server.
+- Database ORM  : SQLAlchemy 2.0 with SQLite (local) or PostgreSQL (Supabase cloud).
+- Authentication: OAuth2 with JWT Bearer tokens & Passlib (bcrypt) hashing.
+- Routing       : Modular APIRouters split by domain under `backend/app/routers/`.
+
+================================================================================
+END OF FILE STRUCTURE
+================================================================================
