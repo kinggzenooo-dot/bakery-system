@@ -4,9 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.app.database import engine, Base, SessionLocal
-from backend.app.seed import seed_database
-from backend.app.routers import (
+from app.database import engine, Base, SessionLocal
+from app.seed import seed_database
+from app.routers import (
     auth_routes,
     user_routes,
     product_routes,

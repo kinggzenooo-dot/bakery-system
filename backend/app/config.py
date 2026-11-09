@@ -2,13 +2,16 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env file from workspace root or current directory
-load_dotenv()
-root_env = Path(__file__).resolve().parent.parent.parent / ".env"
-if root_env.exists():
-    load_dotenv(dotenv_path=root_env)
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file from backend or root directory
+load_dotenv()
+backend_env = BASE_DIR / ".env"
+root_env = BASE_DIR.parent / ".env"
+if backend_env.exists():
+    load_dotenv(dotenv_path=backend_env)
+elif root_env.exists():
+    load_dotenv(dotenv_path=root_env)
 
 # In serverless environments like Vercel, the local filesystem outside /tmp is read-only
 if os.environ.get("VERCEL"):

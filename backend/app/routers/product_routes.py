@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from backend.app.database import get_db
-from backend.app import models, schemas
-from backend.app.auth import require_admin, require_staff
+from app.database import get_db
+from app import models, schemas
+from app.auth import require_admin, require_staff
 
 SUPABASE_URL = os.getenv("VITE_SUPABASE_URL") or os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("VITE_SUPABASE_ANON_KEY") or os.getenv("SUPABASE_KEY")

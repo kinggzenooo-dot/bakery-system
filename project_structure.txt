@@ -1,117 +1,100 @@
 ================================================================================
-FREDY BILLS BAKERY MANAGEMENT SYSTEM - DIRECTORY & FILE STRUCTURE
+FREDY BILLS BAKERY MANAGEMENT SYSTEM - DECOUPLED ARCHITECTURE STRUCTURE
 ================================================================================
-Generated: 2026-11-09
-Project Path: D:\MSEPROJECT\bakery system
+Architecture Model: Decoupled Multi-Service Deployment
+- Frontend Host   : Vercel (Pure Static HTML5 / CSS3 / Vanilla ES6 JavaScript)
+- Backend Host    : Render (FastAPI / Uvicorn ASGI Web Service)
+- Database & CDN  : Supabase (PostgreSQL Database & Storage Buckets)
 
 --------------------------------------------------------------------------------
-1. VISUAL DIRECTORY TREE
+1. DIRECTORY TREE
 --------------------------------------------------------------------------------
 
 bakery system/
 │
-├── .env                                 # Environment variables (Supabase URL, Anon Key, etc.)
-├── .gitignore                           # Git ignore rules (virtual environments, caches, DBs)
-├── add_features.sql                     # SQL migration script for additional database features
-├── admin.html                           # Administrator Dashboard & Management Portal UI
-├── baker.html                           # Baker / Production Staff Dashboard UI
-├── delivery.html                        # Delivery / Rider Dashboard UI
-├── important.txt                        # Project reference, credentials, endpoints & deployment guide
-├── index.html                           # Customer Landing Page / Public Storefront UI
-├── login.html                           # Multi-Role User Authentication & Login Portal UI
-├── pos.html                             # Point of Sale (POS) & Counter Staff Interface UI
-├── project_structure.txt                # Complete folder and file structure documentation (this file)
+├── .env                                 # Supabase & Backend environment keys
+├── .gitignore                           # Git ignore definitions
+├── important.txt                        # Master system reference, credentials & deployment guide
+├── project_structure.txt                # Directory and component guide (this file)
+├── README.md                            # Project overview and deployment instructions
 ├── schema_supabase.sql                  # Supabase PostgreSQL schema definition & DDL
-├── vercel.json                          # Vercel deployment configuration
+├── vercel.json                          # Root Vercel configuration (routes to /frontend)
 │
-├── backend/                             # FastAPI Python Backend Application
-│   ├── bakery.db                        # Local SQLite database file
-│   ├── requirements.txt                 # Python dependencies (fastapi, uvicorn, sqlalchemy, etc.)
-│   ├── run.py                           # Server startup script (Uvicorn runner)
-│   ├── test_api.py                      # API automated testing & validation script
+├── frontend/                            # [DEPLOY TO VERCEL]
+│   ├── vercel.json                      # Vercel static routing & redirects
+│   ├── index.html                       # Customer Storefront Portal
+│   ├── login.html                       # Multi-Role Authentication Portal (Default entry)
+│   ├── admin.html                       # Administrator Dashboard & Management Portal
+│   ├── pos.html                         # Cashier / Counter Point of Sale Interface
+│   ├── baker.html                       # Kitchen / Baker Production Queue Portal
+│   ├── delivery.html                    # Rider & Delivery Staff Dispatch Portal
 │   │
-│   ├── app/                             # Core Application Package
-│   │   ├── auth.py                      # Password hashing, JWT token creation & verification
-│   │   ├── config.py                    # App configuration, settings & environment variables
-│   │   ├── database.py                  # Database engine connection & session setup (SQLAlchemy)
-│   │   ├── main.py                      # FastAPI application entrypoint, CORS & route registration
-│   │   ├── models.py                    # SQLAlchemy ORM database models
-│   │   ├── schemas.py                   # Pydantic schemas for data validation & serialization
-│   │   ├── seed.py                      # Database seeding script (populates demo data)
-│   │   │
-│   │   └── routers/                     # API Route Handlers / Endpoints
-│   │       ├── auth_routes.py           # Authentication routes (login, token refresh, current user)
-│   │       ├── delivery_routes.py       # Delivery management & tracking endpoints
-│   │       ├── inventory_routes.py      # Ingredients and raw stock inventory endpoints
-│   │       ├── order_routes.py          # POS & online order processing endpoints
-│   │       ├── product_routes.py        # Bakery product catalog CRUD endpoints
-│   │       ├── production_routes.py     # Production batch planning & status endpoints
-│   │       ├── report_routes.py         # Sales analytics, financial reports & KPI metrics
-│   │       ├── store_routes.py          # Store information & branch configuration endpoints
-│   │       ├── supplier_routes.py       # Supplier and purchase order management endpoints
-│   │       ├── upload_routes.py         # Image & media file upload handler endpoints
-│   │       └── user_routes.py           # User management & role assignment endpoints
+│   ├── css/
+│   │   └── styles.css                   # Global stylesheet & design system
 │   │
-│   └── uploads/                         # Backend uploaded media storage (product photos)
-│       ├── img_01dacc7d815c.jpg
-│       ├── img_021fe891787f.webp
-│       ├── img_10cf4bea0197.jpg
-│       ├── img_13853aa69f57.jpg
-│       ├── img_188364727efc.webp
-│       ├── img_28b4700a9033.jpg
-│       ├── img_3fe241e4e971.jpg
-│       ├── img_602d2bf0e8c0.jpg
-│       ├── img_73eb6cef1fe8.jpg
-│       ├── img_8246abe37dfe.jpg
-│       ├── img_9d3f216aae52.webp
-│       ├── img_b097484dd9de.jpg
-│       ├── img_b5dfc9b7cf93.jpg
-│       ├── img_bec791c49888.jpg
-│       ├── img_c175c48f76a4.webp
-│       ├── img_c4b9c73852fa.jpg
-│       ├── img_db8d959bfeb3.jpg
-│       └── img_fa11d21daf52.webp
+│   ├── js/
+│   │   ├── api.js                       # API Client (configurable backend URL for Render)
+│   │   ├── app.js                       # Main application controller
+│   │   ├── components.js                # Reusable UI component renderers
+│   │   ├── data.js                      # Static fallback data & constants
+│   │   ├── icons.js                     # SVG icon library
+│   │   └── state.js                     # Global client-side state store
+│   │
+│   └── menu/                            # Static product & menu imagery
+│       ├── 054b1ae2136808ae87e264fb7724f4c3.webp
+│       ├── 8087022ca1695e49706814ff5cfd9535.jpg
+│       ├── moms-chocolate-cake-XL-RECIPE0918-10dde1dcd79b47b9876cda8812f11ad6.jpg
+│       ├── OIP (1).webp
+│       ├── OIP (2).webp
+│       ├── OIP (3).webp
+│       └── OIP.webp
 │
-├── css/                                 # Styling & Presentation
-│   └── styles.css                       # Unified CSS stylesheet for all portals & components
-│
-├── js/                                  # Frontend Client Scripts (Vanilla ES6 JavaScript)
-│   ├── api.js                           # Centralized API fetch wrapper & backend communication
-│   ├── app.js                           # Application initialization & page workflow logic
-│   ├── components.js                    # Reusable UI component generators (cards, modals, badges)
-│   ├── data.js                          # Static fallback data & lookup tables
-│   ├── icons.js                         # SVG icon definitions & icon rendering helpers
-│   └── state.js                         # Global reactive state management & user session storage
-│
-├── menu/                                # Static Menu Assets & Sample Product Imagery
-│   ├── 054b1ae2136808ae87e264fb7724f4c3.webp
-│   ├── 8087022ca1695e49706814ff5cfd9535.jpg
-│   ├── moms-chocolate-cake-XL-RECIPE0918-10dde1dcd79b47b9876cda8812f11ad6.jpg
-│   ├── OIP (1).webp
-│   ├── OIP (2).webp
-│   ├── OIP (3).webp
-│   └── OIP.webp
-│
-└── uploads/                             # Root upload staging directory
+└── backend/                             # [DEPLOY TO RENDER]
+    ├── requirements.txt                 # Python dependencies (fastapi, uvicorn, sqlalchemy, psycopg2, etc.)
+    ├── run.py                           # Server launcher (binds to 0.0.0.0:$PORT)
+    ├── test_api.py                      # Automated test suite (9 test suites, 100% pass)
+    ├── bakery.db                        # SQLite fallback database
+    ├── schema_supabase.sql              # Supabase database schema
+    │
+    ├── uploads/                         # Local upload storage fallback
+    │
+    └── app/                             # Core FastAPI application package
+        ├── __init__.py                  # Package marker
+        ├── auth.py                      # JWT authentication & bcrypt hashing
+        ├── config.py                    # Environment settings & DB URL normalizer
+        ├── database.py                  # SQLAlchemy engine & session maker
+        ├── main.py                      # FastAPI app entrypoint & CORS middleware
+        ├── models.py                    # SQLAlchemy ORM models
+        ├── schemas.py                   # Pydantic data schemas
+        ├── seed.py                      # Demo seeder script
+        │
+        └── routers/                     # Domain API endpoints
+            ├── __init__.py              # Package marker
+            ├── auth_routes.py           # Authentication & token endpoints
+            ├── delivery_routes.py       # Delivery tracking endpoints
+            ├── inventory_routes.py      # Ingredients & raw inventory
+            ├── order_routes.py          # POS & customer order endpoints
+            ├── product_routes.py        # Product catalog CRUD endpoints
+            ├── production_routes.py     # Baker production batch endpoints
+            ├── report_routes.py         # Financial & sales analytics
+            ├── store_routes.py          # Branch & store config
+            ├── supplier_routes.py       # Supplier management
+            ├── upload_routes.py         # Image uploads (Supabase Storage)
+            └── user_routes.py           # Staff & user account admin
 
 --------------------------------------------------------------------------------
-2. ROLE-BASED PORTALS & ENTRY POINTS
+2. DEPLOYMENT CONFIGURATIONS
 --------------------------------------------------------------------------------
-- index.html    : Public storefront for customer viewing and ordering.
-- login.html    : Role-based authentication gate (redirects to assigned portal).
-- admin.html    : Full system management (products, inventory, staff, sales, reports).
-- pos.html      : Cashier & counter staff terminal for in-store order processing.
-- baker.html    : Kitchen / baking queue management for batch production.
-- delivery.html : Rider portal for order dispatch, pickup, and delivery confirmation.
+RENDER (Backend):
+- Root Directory : backend
+- Build Command  : pip install -r requirements.txt
+- Start Command  : uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
---------------------------------------------------------------------------------
-3. BACKEND ARCHITECTURE BREAKDOWN
---------------------------------------------------------------------------------
-- Framework     : FastAPI (Python 3.10+) with Uvicorn ASGI server.
-- Database ORM  : SQLAlchemy 2.0 with SQLite (local) or PostgreSQL (Supabase cloud).
-- Authentication: OAuth2 with JWT Bearer tokens & Passlib (bcrypt) hashing.
-- Routing       : Modular APIRouters split by domain under `backend/app/routers/`.
+VERCEL (Frontend):
+- Root Directory : frontend (or default root with root vercel.json)
+- Framework Preset: Other / Static
 
-================================================================================
-END OF FILE STRUCTURE
+SUPABASE (Database & CDN):
+- PostgreSQL Connection string in Render -> DATABASE_URL
+- Storage Bucket: 'bakery-images' (Public)
 ================================================================================

@@ -3,9 +3,9 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app import models, schemas
-from backend.app.auth import require_admin, require_staff
+from app.database import get_db
+from app import models, schemas
+from app.auth import require_admin, require_staff
 
 router = APIRouter(prefix="/api/inventory", tags=["Inventory Management"])
 

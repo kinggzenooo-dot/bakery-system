@@ -2,9 +2,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app import models, schemas
-from backend.app.auth import get_password_hash, require_admin
+from app.database import get_db
+from app import models, schemas
+from app.auth import get_password_hash, require_admin
 
 router = APIRouter(prefix="/api/users", tags=["User Management (Admin)"])
 

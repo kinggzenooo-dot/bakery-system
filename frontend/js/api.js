@@ -3,9 +3,28 @@
  * Enterprise REST API Bridge with token auth and multipart uploads
  */
 
-const API_BASE_URL = window.location.origin.includes("localhost") || window.location.origin.includes("127.0.0.1")
-  ? "http://127.0.0.1:8000/api"
-  : `${window.location.origin}/api`;
+// ============================================================================
+// CONFIGURATION: Production Backend URL (Render, Railway, or Custom Domain)
+// ============================================================================
+// Replace with your live Render backend URL once deployed, for example:
+// "https://fredy-bills-bakery.onrender.com"
+const PRODUCTION_BACKEND_URL = "https://fredy-bills-bakery.onrender.com";
+
+// Check if running in local development environment
+const isLocal = 
+  window.location.origin.includes("localhost") || 
+  window.location.origin.includes("127.0.0.1") ||
+  window.location.protocol === "file:";
+
+// Active API Base URL:
+// 1. Checks localStorage override (useful for testing or switching environments)
+// 2. Uses http://127.0.0.1:8000/api if running locally
+// 3. Uses PRODUCTION_BACKEND_URL/api in production on Vercel
+const API_BASE_URL = localStorage.getItem("fb_api_url") || (
+  isLocal 
+    ? "http://127.0.0.1:8000/api" 
+    : (PRODUCTION_BACKEND_URL.replace(/\/+$/, "") + "/api")
+);
 
 const API = {
   async fetchJson(endpoint, options = {}) {

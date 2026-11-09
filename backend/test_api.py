@@ -1,10 +1,12 @@
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
 import json
 from fastapi.testclient import TestClient
-from backend.app.main import app
+from app.main import app
 
 client = TestClient(app)
 

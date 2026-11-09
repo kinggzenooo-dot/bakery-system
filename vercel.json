@@ -3,15 +3,12 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.py"
-    }
-  ],
-  "redirects": [
-    {
       "source": "/",
-      "destination": "/login.html",
-      "permanent": false
+      "destination": "/frontend/login.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
     }
   ]
 }

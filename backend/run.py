@@ -1,16 +1,18 @@
-import uvicorn
 import os
 import sys
 from pathlib import Path
+import uvicorn
 
-# Add project root to sys.path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# Ensure the backend directory is in sys.path so 'app' is cleanly importable
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
     print("==========================================================")
     print(" [*] Starting Fredy Bills Baker Management System Backend")
-    print(" [>] Interactive Swagger API Docs: http://127.0.0.1:8000/docs")
-    print(" [>] Frontend URL: http://127.0.0.1:8000/static/index.html")
-    print(" [>] Login Page: http://127.0.0.1:8000/static/login.html")
+    print(f" [>] Interactive Swagger API Docs: http://127.0.0.1:{port}/docs")
+    print(f" [>] Running on Port: {port}")
     print("==========================================================")
-    uvicorn.run("backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=False)

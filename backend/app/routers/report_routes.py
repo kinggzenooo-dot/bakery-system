@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from backend.app.database import get_db
-from backend.app import models, schemas
-from backend.app.auth import require_admin, require_staff
+from app.database import get_db
+from app import models, schemas
+from app.auth import require_admin, require_staff
 
 router = APIRouter(prefix="/api", tags=["Reports & Payments"])
 
