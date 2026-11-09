@@ -3,7 +3,9 @@
  * Enterprise REST API Bridge with token auth and multipart uploads
  */
 
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+const API_BASE_URL = window.location.origin.includes("localhost") || window.location.origin.includes("127.0.0.1")
+  ? "http://127.0.0.1:8000/api"
+  : `${window.location.origin}/api`;
 
 const API = {
   async fetchJson(endpoint, options = {}) {

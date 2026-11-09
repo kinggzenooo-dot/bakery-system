@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,15 +20,16 @@ from backend.app.routers import (
     upload_routes
 )
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
-
-# Seed database with initial data
-db = SessionLocal()
+# Create database tables and seed
 try:
-    seed_database(db)
-finally:
-    db.close()
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        seed_database(db)
+    finally:
+        db.close()
+except Exception as e:
+    print(f"[STARTUP ERROR] Database init failed: {e}")
 
 app = FastAPI(
     title="Fredy Bills Baker Management System API",
@@ -62,10 +64,20 @@ def health_check():
     return {"status": "online", "system": "Fredy Bills Baker Management System", "version": "2.0.0"}
 
 # Mount uploads directory for product images
-UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads"
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+try:
+    if os.environ.get("VERCEL"):
+        UPLOAD_DIR = Path("/tmp") / "uploads"
+    else:
+        UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads"
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+except Exception as e:
+    print(f"[STARTUP ERROR] Upload dir mount failed: {e}")
 
-# Mount frontend static directory
-FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent
-app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+# Mount frontend static directory (only in local / container environments)
+try:
+    if not os.environ.get("VERCEL"):
+        FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent
+        app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+except Exception as e:
+    print(f"[STARTUP ERROR] Static dir mount failed: {e}")
