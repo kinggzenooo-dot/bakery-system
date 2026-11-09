@@ -111,8 +111,8 @@
         }
       };
 
-      // Auto-refresh every 45 seconds
-      setInterval(() => store.syncDeliveryData(), 45000);
+      // Auto-refresh every 4 seconds (live courier dispatch)
+      setInterval(() => store.syncDeliveryData(), 4000);
 
       function render() {
         if (typeof C === 'undefined') return;

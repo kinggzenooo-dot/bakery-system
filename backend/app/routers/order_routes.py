@@ -248,13 +248,22 @@ def update_order_status(
             timeline[2]["done"] = True
             timeline[2]["active"] = False
             timeline[3]["done"] = True
+            timeline[3]["active"] = True
             timeline[3]["time"] = now_str
+        # Sync delivery record if delivery fulfillment
+        if order.fulfillment == "delivery":
+            del_rec = db.query(models.DeliveryRecord).filter(models.DeliveryRecord.order_id == order.id).first()
+            if del_rec and del_rec.status in ["Pending", "Scheduled"]:
+                del_rec.status = "Assigned"
     elif status_data.status == "out_for_delivery":
         order.status_step = 5
         if len(timeline) > 4:
             timeline[3]["done"] = True
             timeline[4]["active"] = True
             timeline[4]["time"] = now_str
+        del_rec = db.query(models.DeliveryRecord).filter(models.DeliveryRecord.order_id == order.id).first()
+        if del_rec:
+            del_rec.status = "Out for Delivery"
     elif status_data.status == "delivered":
         order.status_step = 6
         order.payment_status = "Paid"
@@ -262,7 +271,12 @@ def update_order_status(
             t["done"] = True
             t["active"] = False
         if len(timeline) > 5:
+            timeline[5]["done"] = True
             timeline[5]["time"] = now_str
+        del_rec = db.query(models.DeliveryRecord).filter(models.DeliveryRecord.order_id == order.id).first()
+        if del_rec:
+            del_rec.status = "Delivered"
+            del_rec.delivered_at = datetime.utcnow()
 
     order.timeline_json = json.dumps(timeline)
     db.commit()

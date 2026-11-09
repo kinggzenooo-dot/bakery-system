@@ -252,6 +252,8 @@
       script.onload = () => {
         store.syncAdminData();
         render();
+        // Live auto-sync across all roles (every 4 seconds)
+        setInterval(() => store.syncAdminData(), 4000);
       };
       document.body.appendChild(script);
     }

@@ -108,6 +108,15 @@ def update_delivery_status(
             )
             db.add(notif)
         elif status_data.status == "Failed":
+            order.status = "delivery_failed"
+            order.status_step = 5
+            if status_data.failure_reason:
+                order.notes = (order.notes or "") + f" [Delivery Issue: {status_data.failure_reason}]"
+            if len(timeline) > 4:
+                timeline[4]["active"] = False
+                timeline[4]["failed"] = True
+                timeline[4]["time"] = now_str
+                timeline[4]["step"] = f"Delivery Issue: {status_data.failure_reason or 'Driver reported issue'}"
             # Alert Admin
             notif = models.Notification(
                 title=f"Delivery Failed: Order #{order.id}",

@@ -100,6 +100,25 @@ class BakeryStore {
 
     // Initial data synchronization from backend
     this.syncInitialData();
+
+    // Auto-sync polling across all roles & live order tracking (every 4 seconds)
+    setInterval(() => {
+      if (this.state.activeView === "track") {
+        this.syncTrackedOrder();
+      }
+      const role = this.state.currentUser?.role;
+      if (role === 'Administrator') {
+        this.syncAdminData();
+      } else if (role === 'Counter Staff') {
+        this.syncPOSData();
+      } else if (role === 'Baker') {
+        this.syncBakerData();
+      } else if (role === 'Delivery Staff') {
+        this.syncDeliveryData();
+      } else if (role === 'Customer') {
+        this.syncCustomerOrders();
+      }
+    }, 4000);
   }
 
   loadFromStorage(key, fallback) {
@@ -260,6 +279,24 @@ class BakeryStore {
     }
   }
 
+  async syncTrackedOrder() {
+    if (!this.state.trackingOrderId) return;
+    try {
+      const order = await API.getOrder(this.state.trackingOrderId).catch(() => null);
+      if (order && order.id) {
+        const idx = this.state.orders.findIndex(o => o.id === order.id);
+        if (idx > -1) {
+          this.state.orders[idx] = order;
+        } else {
+          this.state.orders.unshift(order);
+        }
+        this.notify();
+      }
+    } catch (err) {
+      console.warn("[Tracked Order Sync] Error:", err);
+    }
+  }
+
   // --- Auth Session Actions ---
   logoutUser() {
     this.state.currentUser = null;
@@ -275,6 +312,9 @@ class BakeryStore {
     this.state.activeView = viewName;
     if (params.category) this.state.activeCategory = params.category;
     if (params.orderId) this.state.trackingOrderId = params.orderId;
+    if (viewName === "track") {
+      this.syncTrackedOrder();
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
     this.notify();
   }

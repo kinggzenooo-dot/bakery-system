@@ -2371,10 +2371,19 @@ const C = {
 
     let timeline = [];
     try {
-      timeline = typeof order.timeline_json === 'string' ? JSON.parse(order.timeline_json) : (order.timeline_json || []);
+      if (Array.isArray(order.timeline)) {
+        timeline = order.timeline;
+      } else if (typeof order.timeline_json === 'string') {
+        timeline = JSON.parse(order.timeline_json);
+      } else if (Array.isArray(order.timeline_json)) {
+        timeline = order.timeline_json;
+      }
     } catch(e) {
       timeline = [];
     }
+
+    const custName = order.customerName || order.customer_name || 'Valued Customer';
+    const statusClass = (order.status || 'confirmed').toLowerCase().replace(/\s+/g, '-');
 
     return `
       <div class="container--narrow" style="padding:8rem 1.5rem 5rem;">
@@ -2387,24 +2396,24 @@ const C = {
           <div class="tracking-header">
             <div>
               <div style="font-size:0.8rem;text-transform:uppercase;color:var(--c-muted);font-weight:600;">Customer</div>
-              <div style="font-weight:700;font-size:1.1rem;color:var(--c-cream);">${order.customer_name}</div>
+              <div style="font-weight:700;font-size:1.1rem;color:var(--c-cream);">${custName}</div>
             </div>
-            <span class="status-badge preparing">Status: ${order.status}</span>
+            <span class="status-badge ${statusClass}">Status: ${(order.status || 'Confirmed').toUpperCase()}</span>
           </div>
 
           <!-- Timeline Stepper -->
           <div class="timeline">
             ${timeline.map(step => `
-              <div class="tl-step ${step.done?'done':''} ${step.active?'active':''}">
-                <div class="tl-marker">${step.done ? Icons.check() : ''}</div>
-                <div class="tl-title">${step.title}</div>
-                <div class="tl-time">${step.time}</div>
+              <div class="tl-step ${step.done?'done':''} ${step.active?'active':''} ${step.failed?'failed':''}">
+                <div class="tl-marker" style="${step.failed?'background:var(--c-red);color:#fff;':''}">${step.failed ? Icons.alertCircle() : (step.done ? Icons.check() : '')}</div>
+                <div class="tl-title">${step.title || step.step || 'Step'}</div>
+                <div class="tl-time">${step.time || ''}</div>
               </div>
             `).join('')}
           </div>
 
           <div style="text-align:center;margin-top:2rem;">
-            <button class="btn btn-outline btn-sm" onclick="store.syncCustomerOrders();">${Icons.refresh()} Refresh Status</button>
+            <button class="btn btn-outline btn-sm" onclick="store.syncTrackedOrder();">${Icons.refresh()} Refresh Status</button>
           </div>
         </div>
       </div>
@@ -2439,7 +2448,7 @@ const C = {
                   <tr>
                     <td><strong>#${o.id}</strong></td>
                     <td>${o.created_at ? new Date(o.created_at).toLocaleDateString() : 'Today'}</td>
-                    <td>${(o.items || []).map(i => `${i.quantity}x ${i.product_name}`).join(', ') || 'Bakery Items'}</td>
+                    <td>${(o.items || []).map(i => `${i.quantity}x ${i.name || i.product_name || 'Item'}`).join(', ') || 'Bakery Items'}</td>
                     <td><strong>&#8369;${o.total.toLocaleString()}</strong></td>
                     <td><span class="status-pill status-${o.status}">${o.status}</span></td>
                     <td>

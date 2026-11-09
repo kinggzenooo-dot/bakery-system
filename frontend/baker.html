@@ -98,8 +98,8 @@
         }
       };
 
-      // Auto-refresh every 60 seconds (live KDS)
-      setInterval(() => store.syncBakerData(), 60000);
+      // Auto-refresh every 4 seconds (live Kitchen Display System)
+      setInterval(() => store.syncBakerData(), 4000);
 
       function render() {
         if (typeof C === 'undefined') return;

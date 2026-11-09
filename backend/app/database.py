@@ -1,36 +1,52 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from app.config import DATABASE_URL
+from app.config import DATABASE_URL, BASE_DIR
+
+Base = declarative_base()
+
+# Local SQLite fallback
+sqlite_url = f"sqlite:///{BASE_DIR / 'bakery.db'}"
+sqlite_engine = create_engine(
+    sqlite_url,
+    connect_args={"check_same_thread": False}
+)
+SqliteSession = sessionmaker(autocommit=False, autoflush=False, bind=sqlite_engine)
+
+engine = sqlite_engine
+SessionLocal = SqliteSession
 
 if "sqlite" in DATABASE_URL:
-    engine = create_engine(
-        DATABASE_URL,
-        connect_args={"check_same_thread": False}
-    )
+    print(f"[DATABASE] Using SQLite database: {sqlite_url}")
 else:
-    # Production PostgreSQL (Supabase / Neon / Cloud PG)
-    # Try default driver; fallback between psycopg (v3) and psycopg2 if necessary
-    db_url = DATABASE_URL
-    try:
-        engine = create_engine(
-            db_url,
-            pool_pre_ping=True,
-            pool_recycle=300
-        )
-    except Exception as exc:
-        if "postgresql://" in db_url and not any(p in db_url for p in ["+psycopg2", "+psycopg"]):
-            try:
-                # Try explicit psycopg2 driver
-                alt_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
-                engine = create_engine(alt_url, pool_pre_ping=True, pool_recycle=300)
-            except Exception:
-                raise exc
-        else:
-            raise exc
+    # Attempt PostgreSQL connections (testing connectivity before committing to engine)
+    pg_urls = [DATABASE_URL]
+    if "postgresql://" in DATABASE_URL and not any(p in DATABASE_URL for p in ["+psycopg2", "+psycopg"]):
+        pg_urls.append(DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1))
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+    connected = False
+    for url in pg_urls:
+        try:
+            candidate_engine = create_engine(
+                url,
+                pool_pre_ping=True,
+                pool_recycle=300
+            )
+            # Test live connection with 5s timeout
+            with candidate_engine.connect() as conn:
+                pass
+            engine = candidate_engine
+            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            connected = True
+            print("[DATABASE] Successfully connected to PostgreSQL database!")
+            break
+        except Exception as e:
+            print(f"[DATABASE WARNING] PostgreSQL connection failed: {e}")
+
+    if not connected:
+        print("[DATABASE NOTICE] PostgreSQL unreachable (DNS/Network). Falling back to SQLite database to keep all portals online.")
+        engine = sqlite_engine
+        SessionLocal = SqliteSession
 
 def get_db():
     db = SessionLocal()

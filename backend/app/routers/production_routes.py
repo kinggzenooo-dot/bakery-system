@@ -209,6 +209,48 @@ def update_task_status(
         )
         db.add(notif)
 
+    # 4. Synchronize linked Customer Order and Delivery status across all portals
+    import re
+    order_match = re.search(r"Order #(FB-\w+)", task.notes or "")
+    if order_match:
+        order_id = order_match.group(1)
+        order = db.query(models.Order).filter(models.Order.id == order_id).first()
+        if order:
+            try:
+                timeline = json.loads(order.timeline_json) if order.timeline_json else []
+            except Exception:
+                timeline = []
+            now_str = datetime.utcnow().strftime("%I:%M %p")
+
+            if status_data.status in ["Preparing", "Baking", "Cooling"]:
+                order.status = "preparing"
+                order.status_step = 3
+                if len(timeline) > 2:
+                    timeline[0]["done"] = True
+                    timeline[1]["done"] = True
+                    timeline[2]["done"] = False
+                    timeline[2]["active"] = True
+                    timeline[2]["time"] = now_str
+            elif status_data.status in ["Ready", "Completed"]:
+                order.status = "ready"
+                order.status_step = 4
+                if len(timeline) > 3:
+                    timeline[0]["done"] = True
+                    timeline[1]["done"] = True
+                    timeline[2]["done"] = True
+                    timeline[2]["active"] = False
+                    timeline[3]["done"] = True
+                    timeline[3]["active"] = True
+                    timeline[3]["time"] = now_str
+
+                # If delivery order, ensure linked delivery record is assigned & ready for dispatch
+                if order.fulfillment == "delivery":
+                    del_rec = db.query(models.DeliveryRecord).filter(models.DeliveryRecord.order_id == order.id).first()
+                    if del_rec and del_rec.status in ["Pending", "Scheduled"]:
+                        del_rec.status = "Assigned"
+
+            order.timeline_json = json.dumps(timeline)
+
     db.commit()
     db.refresh(task)
     return format_task_response(task)

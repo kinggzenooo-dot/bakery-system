@@ -8,7 +8,7 @@
 // ============================================================================
 // Replace with your live Render backend URL once deployed, for example:
 // "https://fredy-bills-bakery.onrender.com"
-const PRODUCTION_BACKEND_URL = "https://fredy-bills-bakery.onrender.com";
+const PRODUCTION_BACKEND_URL = "https://bakery-system-80sb.onrender.com";
 
 // Check environment
 const isLocal = 

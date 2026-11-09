@@ -178,6 +178,8 @@
       script.onload = () => {
         store.syncPOSData();
         render();
+        // Live auto-sync products, stock & categories every 4 seconds
+        setInterval(() => store.syncPOSData(), 4000);
       };
       document.body.appendChild(script);
     }
